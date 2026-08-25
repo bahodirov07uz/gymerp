@@ -1,0 +1,10 @@
+# Lightweight dev override: runs Django's dev server with autoreload
+# instead of gunicorn.  Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+services:
+  web:
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    environment:
+      DJANGO_DEBUG: "True"

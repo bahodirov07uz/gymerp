@@ -1,0 +1,111 @@
+﻿{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Oylik Hisobot — {{ start|date:"F Y" }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Header & Month Picker -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-[#F0F2F5]">Oylik Hisobot</h1>
+      <p class="text-xs text-[#8A919E] mt-0.5">Davr: <span class="text-[#F0F2F5] font-semibold">{{ start|date:"d-M-Y" }}</span> — <span class="text-[#F0F2F5] font-semibold">{{ end|date:"d-M-Y" }}</span></p>
+    </div>
+    <form method="get" class="flex items-center gap-2">
+      <input type="month" name="month" value="{{ start|date:'Y-m' }}"
+        class="bg-[#1A1E25] border border-[#252A33] rounded-lg px-3 py-1.5 text-xs text-[#F0F2F5] focus:outline-none focus:border-emerald-500 transition-colors">
+      <button type="submit"
+        class="px-3 py-1.5 bg-[#1A1E25] hover:bg-[#252A33] border border-[#252A33] text-[#F0F2F5] text-xs font-semibold rounded-lg transition-colors">
+        Ko'rish
+      </button>
+    </form>
+  </div>
+
+  <!-- KPI Grid -->
+  <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+    <div class="bg-[#13161B] border border-[#252A33] rounded-xl p-4">
+      <span class="text-xs font-medium text-[#8A919E] uppercase tracking-wide">Oylik hisoblangan daromad</span>
+      <p class="text-2xl font-bold tabular-nums text-emerald-400 mt-2">{{ revenue.total_revenue|intcomma }}</p>
+      <p class="text-xs text-[#8A919E] mt-0.5">UZS (Barcha xizmat va mahsulotlar)</p>
+    </div>
+
+    <div class="bg-[#13161B] border border-[#252A33] rounded-xl p-4">
+      <span class="text-xs font-medium text-[#8A919E] uppercase tracking-wide">Qabul qilingan to'lovlar</span>
+      <p class="text-2xl font-bold tabular-nums text-emerald-400 mt-2">{{ payments|intcomma }}</p>
+      <p class="text-xs text-[#8A919E] mt-0.5">UZS (Kassaga kelib tushgan summa)</p>
+    </div>
+
+    <div class="bg-[#13161B] border border-[#252A33] rounded-xl p-4">
+      <span class="text-xs font-medium text-[#8A919E] uppercase tracking-wide">Umumiy qarzdorlik</span>
+      <p class="text-2xl font-bold tabular-nums text-red-400 mt-2">{{ outstanding_debt|intcomma }}</p>
+      <p class="text-xs text-[#8A919E] mt-0.5">UZS (Barcha a'zolardagi jami qarz)</p>
+    </div>
+
+    <div class="bg-[#13161B] border border-[#252A33] rounded-xl p-4">
+      <span class="text-xs font-medium text-[#8A919E] uppercase tracking-wide">Oylik yangi a'zolar</span>
+      <p class="text-2xl font-bold tabular-nums text-[#F0F2F5] mt-2">{{ new_members }}</p>
+      <p class="text-xs text-[#8A919E] mt-0.5">Kishi ro'yxatdan o'tgan</p>
+    </div>
+
+    <div class="bg-[#13161B] border border-[#252A33] rounded-xl p-4">
+      <span class="text-xs font-medium text-[#8A919E] uppercase tracking-wide">Jami tashriflar soni</span>
+      <p class="text-2xl font-bold tabular-nums text-sky-400 mt-2">{{ attendance }}</p>
+      <p class="text-xs text-[#8A919E] mt-0.5">Marta check-in amalga oshirilgan</p>
+    </div>
+
+    <div class="bg-[#13161B] border border-[#252A33] rounded-xl p-4">
+      <span class="text-xs font-medium text-[#8A919E] uppercase tracking-wide">Faol a'zolar</span>
+      <p class="text-2xl font-bold tabular-nums text-[#F0F2F5] mt-2">{{ active_members }}</p>
+      <p class="text-xs text-[#8A919E] mt-0.5">Jami ro'yxatdagi faol a'zolar</p>
+    </div>
+
+  </div>
+
+  <!-- Detailed Sections -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <!-- Breakdown card -->
+    <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-5 space-y-4">
+      <h2 class="text-base font-bold text-[#F0F2F5]">Oylik tushum tarkibi</h2>
+      <div class="space-y-3 text-sm">
+        <div class="flex items-center justify-between py-2 border-b border-[#252A33]">
+          <span class="text-[#8A919E]">A'zolik to'lovlari (oylik + kunlik):</span>
+          <span class="font-bold tabular-nums text-[#F0F2F5]">{{ revenue.membership_revenue|intcomma }} UZS</span>
+        </div>
+        <div class="flex items-center justify-between py-2 border-b border-[#252A33]">
+          <span class="text-[#8A919E]">Mahsulotlar savdosi:</span>
+          <span class="font-bold tabular-nums text-[#F0F2F5]">{{ revenue.product_revenue|intcomma }} UZS</span>
+        </div>
+        <div class="flex items-center justify-between py-2 font-bold">
+          <span class="text-[#F0F2F5]">Jami hisoblangan:</span>
+          <span class="text-emerald-400 tabular-nums">{{ revenue.total_revenue|intcomma }} UZS</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Best sellers -->
+    <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-5 space-y-4">
+      <h2 class="text-base font-bold text-[#F0F2F5]">Oy davomida eng ko'p sotilganlar</h2>
+      {% if best_sellers %}
+        <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
+          {% for item in best_sellers %}
+          <div class="flex items-center justify-between text-xs py-1.5 border-b border-[#252A33] last:border-0">
+            <span class="font-medium text-[#F0F2F5]">{{ item.product__name }}</span>
+            <div class="text-right">
+              <span class="text-emerald-400 font-semibold tabular-nums">{{ item.revenue|intcomma }} UZS</span>
+              <span class="text-[#8A919E] ml-1">({{ item.quantity_sold }} dona)</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-xs text-[#8A919E] py-4 text-center">Bu oyda mahsulot sotuvi amalga oshirilmagan</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

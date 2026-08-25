@@ -1,0 +1,120 @@
+﻿{% extends "base.html" %}
+
+{% block title %}{% if form.instance.pk %}{{ form.instance.full_name }} — Tahrirlash{% else %}Yangi a'zo qo'shish{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-[#F0F2F5]">
+        {% if form.instance.pk %}A'zo ma'lumotlarini tahrirlash{% else %}Yangi sportchi qo'shish{% endif %}
+      </h1>
+      <p class="text-xs text-[#8A919E] mt-0.5">Sport zal a'zolik anketasi</p>
+    </div>
+    <a href="{% url 'members:list' %}"
+       class="px-3 py-1.5 bg-[#1A1E25] hover:bg-[#252A33] border border-[#252A33] text-[#F0F2F5] text-xs font-medium rounded-lg transition-colors">
+      ← Ro'yxatga qaytish
+    </a>
+  </div>
+
+  <!-- Form Card -->
+  <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-6 shadow-xl shadow-black/20">
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+
+      {% if form.errors %}
+      <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs space-y-1">
+        <p class="font-semibold">Iltimos, kiritilgan ma'lumotlarni tekshiring:</p>
+        <ul class="list-disc list-inside">
+          {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+              <li>{{ field }}: {{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <!-- First & Last Name -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-medium text-[#8A919E] uppercase tracking-wide mb-1.5">
+            Ism *
+          </label>
+          {{ form.first_name }}
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-[#8A919E] uppercase tracking-wide mb-1.5">
+            Familiya *
+          </label>
+          {{ form.last_name }}
+        </div>
+      </div>
+
+      <!-- Phone & Date of Birth -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-medium text-[#8A919E] uppercase tracking-wide mb-1.5">
+            Telefon raqam *
+          </label>
+          {{ form.phone }}
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-[#8A919E] uppercase tracking-wide mb-1.5">
+            Tug'ilgan sana
+          </label>
+          {{ form.date_of_birth }}
+        </div>
+      </div>
+
+      <!-- Gender & Address -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-medium text-[#8A919E] uppercase tracking-wide mb-1.5">
+            Jinsi
+          </label>
+          {{ form.gender }}
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-[#8A919E] uppercase tracking-wide mb-1.5">
+            Manzil
+          </label>
+          {{ form.address }}
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div>
+        <label class="block text-xs font-medium text-[#8A919E] uppercase tracking-wide mb-1.5">
+          Qo'shimcha eslatmalar / salomatlik holati
+        </label>
+        {{ form.notes }}
+      </div>
+
+      <!-- Active Checkbox -->
+      <div class="flex items-center gap-2 pt-2">
+        {{ form.is_active }}
+        <label for="{{ form.is_active.id_for_label }}" class="text-sm font-medium text-[#F0F2F5] cursor-pointer">
+          Faol sportchi maqomi
+        </label>
+      </div>
+
+      <!-- Submit Buttons -->
+      <div class="flex items-center justify-end gap-3 pt-4 border-t border-[#252A33]">
+        <a href="{% url 'members:list' %}"
+           class="px-4 py-2.5 bg-[#1A1E25] hover:bg-[#252A33] border border-[#252A33] text-[#F0F2F5] text-xs font-semibold rounded-xl transition-colors">
+          Bekor qilish
+        </a>
+        <button type="submit"
+                class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl transition-colors shadow-lg shadow-emerald-600/20">
+          {% if form.instance.pk %}O'zgarishlarni saqlash{% else %}Saqlash va profilga o'tish{% endif %}
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</div>
+{% endblock %}

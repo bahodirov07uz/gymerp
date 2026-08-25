@@ -1,0 +1,139 @@
+﻿{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Qarzdorlar ro'yxati{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-[#F0F2F5]">💳 Qarzdorlar</h1>
+      <p class="text-xs text-[#8A919E] mt-0.5">Balansida to'lanmagan qarz mavjud bo'lgan a'zolar</p>
+    </div>
+  </div>
+
+  <!-- Search & Filter Bar -->
+  <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-4">
+    <form method="get" class="flex flex-col sm:flex-row items-center gap-3">
+      <div class="relative flex-1 w-full">
+        <input type="text"
+               name="q"
+               value="{{ request.GET.q }}"
+               placeholder="Qarzdor a'zo ismi, telefoni yoki kodi..."
+               class="w-full bg-[#1A1E25] border border-[#252A33] rounded-xl pl-10 pr-4 py-2.5 text-sm text-[#F0F2F5] placeholder-[#8A919E] focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500/30 transition-all">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#8A919E]">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+            <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <button type="submit"
+                class="flex-1 sm:flex-none px-4 py-2.5 bg-[#1A1E25] hover:bg-[#252A33] border border-[#252A33] text-[#F0F2F5] text-xs font-semibold rounded-xl transition-colors">
+          Qidirish
+        </button>
+        {% if request.GET.q %}
+        <a href="{% url 'billing:debtors' %}"
+           class="px-3 py-2.5 text-xs text-[#8A919E] hover:text-[#F0F2F5] transition-colors">
+          Tozalash
+        </a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <!-- Debtors Table -->
+  <div class="bg-[#13161B] border border-[#252A33] rounded-2xl overflow-hidden shadow-xl shadow-black/10">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-[#252A33] bg-[#1A1E25]/50">
+            <th class="px-5 py-3.5 text-[11px] font-semibold text-[#8A919E] uppercase tracking-wider">Kod</th>
+            <th class="px-5 py-3.5 text-[11px] font-semibold text-[#8A919E] uppercase tracking-wider">Sportchi</th>
+            <th class="px-5 py-3.5 text-[11px] font-semibold text-[#8A919E] uppercase tracking-wider">Telefon</th>
+            <th class="px-5 py-3.5 text-[11px] font-semibold text-[#8A919E] uppercase tracking-wider text-right">Qarz summasi</th>
+            <th class="px-5 py-3.5 text-[11px] font-semibold text-[#8A919E] uppercase tracking-wider">Oxirgi to'lov</th>
+            <th class="px-5 py-3.5 text-[11px] font-semibold text-[#8A919E] uppercase tracking-wider text-right">Amal</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#252A33]">
+          {% for row in debtors %}
+          <tr class="hover:bg-[#1A1E25]/80 transition-colors group">
+            <td class="px-5 py-3.5 whitespace-nowrap">
+              <span class="font-mono text-xs text-[#8A919E] bg-[#1A1E25] px-2 py-1 rounded border border-[#252A33]">
+                {% if row.member %}{{ row.member.member_code }}{% else %}{{ row.member_code }}{% endif %}
+              </span>
+            </td>
+            <td class="px-5 py-3.5 whitespace-nowrap">
+              <a href="{% if row.member %}{% url 'members:profile' row.member.pk %}{% else %}{% url 'members:profile' row.pk %}{% endif %}"
+                 class="text-sm font-semibold text-[#F0F2F5] group-hover:text-red-400 transition-colors">
+                {% if row.member %}{{ row.member.full_name }}{% else %}{{ row.full_name }}{% endif %}
+              </a>
+            </td>
+            <td class="px-5 py-3.5 whitespace-nowrap text-xs text-[#8A919E]">
+              {% if row.member %}{{ row.member.phone }}{% else %}{{ row.phone }}{% endif %}
+            </td>
+            <td class="px-5 py-3.5 whitespace-nowrap text-right font-bold tabular-nums text-red-400 text-sm">
+              {% if row.balance %}{{ row.balance|intcomma }}{% else %}{{ row.annotated_balance|intcomma }}{% endif %} UZS
+            </td>
+            <td class="px-5 py-3.5 whitespace-nowrap text-xs text-[#8A919E]">
+              {% if row.last_payment %}
+                {{ row.last_payment.created_at|date:"d-M-Y" }} ({{ row.last_payment.amount|intcomma }} UZS)
+              {% elif row.last_payment_date %}
+                {{ row.last_payment_date|date:"d-M-Y" }}
+              {% else %}
+                <span class="text-[#8A919E]/50">To'lov bo'lmagan</span>
+              {% endif %}
+            </td>
+            <td class="px-5 py-3.5 whitespace-nowrap text-right text-xs">
+              <a href="{% if row.member %}{% url 'members:profile' row.member.pk %}{% else %}{% url 'members:profile' row.pk %}{% endif %}"
+                 class="inline-flex items-center gap-1 px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition-colors">
+                To'lash / Profil
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="px-5 py-12 text-center text-[#8A919E]">
+              <div class="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6">
+                  <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/>
+                </svg>
+              </div>
+              <p class="text-sm font-semibold text-[#F0F2F5]">Qarzdorlar mavjud emas</p>
+              <p class="text-xs text-[#8A919E] mt-1">Barcha a'zolarning hisob-kitoblari to'liq qilingan</p>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="px-5 py-3.5 border-t border-[#252A33] flex items-center justify-between text-xs text-[#8A919E] bg-[#1A1E25]/30">
+      <div>
+        Sahifa {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+      </div>
+      <div class="flex items-center gap-2">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+           class="px-3 py-1.5 bg-[#1A1E25] hover:bg-[#252A33] border border-[#252A33] rounded-lg text-[#F0F2F5] transition-colors">
+          Oldingi
+        </a>
+        {% endif %}
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+           class="px-3 py-1.5 bg-[#1A1E25] hover:bg-[#252A33] border border-[#252A33] rounded-lg text-[#F0F2F5] transition-colors">
+          Keyingi
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

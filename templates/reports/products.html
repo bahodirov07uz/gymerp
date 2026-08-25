@@ -1,0 +1,95 @@
+﻿{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Mahsulotlar Hisoboti{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-[#F0F2F5]">Mahsulotlar Hisoboti</h1>
+      <p class="text-xs text-[#8A919E] mt-0.5">Oxirgi 30 kunlik savdo tahlili va ombor zaxirasi</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Best Sellers Table Card -->
+    <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-5 space-y-4 shadow-xl shadow-black/10">
+      <div class="flex items-center justify-between">
+        <h2 class="text-base font-bold text-[#F0F2F5]">Eng ko'p sotilgan mahsulotlar (Top 50)</h2>
+        <span class="text-xs text-[#8A919E]">30 kun</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-[#252A33] text-[#8A919E] uppercase font-semibold">
+              <th class="py-2.5 px-3">Mahsulot</th>
+              <th class="py-2.5 px-3 text-right">Sotilgan miqdor</th>
+              <th class="py-2.5 px-3 text-right">Jami tushum</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#252A33]">
+            {% for p in best_sellers %}
+            <tr class="hover:bg-[#1A1E25]/50 transition-colors">
+              <td class="py-2.5 px-3 font-semibold text-[#F0F2F5]">{{ p.product__name }}</td>
+              <td class="py-2.5 px-3 text-right tabular-nums text-[#F0F2F5]">{{ p.quantity_sold }} dona</td>
+              <td class="py-2.5 px-3 text-right font-bold tabular-nums text-emerald-400">{{ p.revenue|intcomma }} UZS</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="py-8 text-center text-[#8A919E]">Savdo ma'lumotlari yo'q</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Low Stock Warning Card -->
+    <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-5 space-y-4 shadow-xl shadow-black/10">
+      <div class="flex items-center justify-between">
+        <h2 class="text-base font-bold text-[#F0F2F5]">⚠️ Kam qolgan mahsulotlar zaxirasi</h2>
+        <span class="px-2 py-0.5 rounded text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          Zaxira tanqisligi
+        </span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-[#252A33] text-[#8A919E] uppercase font-semibold">
+              <th class="py-2.5 px-3">Mahsulot</th>
+              <th class="py-2.5 px-3 text-right">Mavjud qoldiq</th>
+              <th class="py-2.5 px-3 text-right">Chegara</th>
+              <th class="py-2.5 px-3 text-right">Amal</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#252A33]">
+            {% for p in low_stock %}
+            <tr class="hover:bg-[#1A1E25]/50 transition-colors">
+              <td class="py-2.5 px-3 font-semibold text-amber-400">{{ p.name }}</td>
+              <td class="py-2.5 px-3 text-right font-bold tabular-nums text-red-400">{{ p.stock_quantity }} {{ p.unit }}</td>
+              <td class="py-2.5 px-3 text-right tabular-nums text-[#8A919E]">{{ p.low_stock_threshold }} {{ p.unit }}</td>
+              <td class="py-2.5 px-3 text-right">
+                <a href="{% url 'inventory:list' %}"
+                   class="px-2 py-1 bg-[#1A1E25] hover:bg-[#252A33] text-emerald-400 border border-[#252A33] rounded text-[10px] transition-colors">
+                  To'ldirish
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="py-8 text-center text-emerald-400">
+                Barcha mahsulotlar yetarli miqdorda mavjud.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

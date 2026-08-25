@@ -1,0 +1,66 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Kirish{% endblock %}
+
+{% block auth_content %}
+<div class="w-full max-w-sm px-4">
+  <!-- Logo -->
+  <div class="flex flex-col items-center mb-8">
+    <div class="w-14 h-14 bg-emerald-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-emerald-600/20">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 text-white">
+        <path d="M11.25 4.533A9.707 9.707 0 006 3a9.735 9.735 0 00-3.25.555.75.75 0 00-.5.707v14.25a.75.75 0 001 .707A8.237 8.237 0 016 18.75c1.995 0 3.823.707 5.25 1.886V4.533zM12.75 20.636A8.214 8.214 0 0118 18.75c.966 0 1.89.166 2.75.47a.75.75 0 001-.708V4.262a.75.75 0 00-.5-.707A9.735 9.735 0 0018 3a9.707 9.707 0 00-5.25 1.533v16.103z"/>
+      </svg>
+    </div>
+    <h1 class="text-2xl font-bold text-[#F0F2F5]">GymCRM</h1>
+    <p class="text-sm text-[#8A919E] mt-1">Sport zal boshqaruv tizimi</p>
+  </div>
+
+  <!-- Login card -->
+  <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-6 shadow-2xl shadow-black/40">
+    <h2 class="text-lg font-semibold text-[#F0F2F5] mb-5">Tizimga kirish</h2>
+
+    {% if form.errors %}
+    <div class="flex items-start gap-2.5 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm mb-4">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0 mt-0.5">
+        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+      </svg>
+      <p>Foydalanuvchi nomi yoki parol noto'g'ri.</p>
+    </div>
+    {% endif %}
+
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      <div>
+        <label for="id_username" class="block text-xs font-medium text-[#8A919E] uppercase tracking-wide mb-1.5">
+          Foydalanuvchi nomi
+        </label>
+        <input type="text" id="id_username" name="username" autocomplete="username" autofocus
+          required
+          class="w-full bg-[#1A1E25] border border-[#252A33] rounded-lg px-3 py-2.5 text-sm text-[#F0F2F5] placeholder-[#8A919E] focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-colors"
+          placeholder="username">
+      </div>
+      <div>
+        <label for="id_password" class="block text-xs font-medium text-[#8A919E] uppercase tracking-wide mb-1.5">
+          Parol
+        </label>
+        <input type="password" id="id_password" name="password" autocomplete="current-password"
+          required
+          class="w-full bg-[#1A1E25] border border-[#252A33] rounded-lg px-3 py-2.5 text-sm text-[#F0F2F5] placeholder-[#8A919E] focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-colors"
+          placeholder="••••••••">
+      </div>
+      <input type="hidden" name="next" value="{{ next }}">
+      <button type="submit"
+        class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/50 mt-2">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+          <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/>
+        </svg>
+        Kirish
+      </button>
+    </form>
+  </div>
+
+  <p class="text-center text-xs text-[#8A919E] mt-6">
+    GymCRM &copy; {% now "Y" %} — Barcha huquqlar himoyalangan
+  </p>
+</div>
+{% endblock %}

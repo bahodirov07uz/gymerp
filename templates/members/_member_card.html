@@ -1,0 +1,293 @@
+﻿{% load humanize %}
+
+<div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-5 shadow-xl shadow-black/20 space-y-5"
+     id="active-member-container"
+     hx-target="this"
+     hx-swap="outerHTML">
+
+  <!-- Header: Name, Code & Status -->
+  <div class="flex items-start justify-between gap-3 border-b border-[#252A33] pb-4">
+    <div>
+      <div class="flex items-center gap-2">
+        <h2 class="text-xl font-bold text-[#F0F2F5]">{{ member.full_name }}</h2>
+        {% if member.is_active %}
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            Faol
+          </span>
+        {% else %}
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20">
+            Nofaol
+          </span>
+        {% endif %}
+      </div>
+      <div class="flex flex-wrap items-center gap-3 text-xs text-[#8A919E] mt-1">
+        <span class="font-mono text-[#F0F2F5] bg-[#1A1E25] px-2 py-0.5 rounded border border-[#252A33]">{{ member.member_code }}</span>
+        <span>📞 {{ member.phone }}</span>
+        {% if member.gender %}
+          <span>{{ member.get_gender_display }}</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <a href="{% url 'members:profile' member.pk %}"
+       class="inline-flex items-center gap-1 px-3 py-1.5 bg-[#1A1E25] hover:bg-[#252A33] border border-[#252A33] text-[#F0F2F5] text-xs font-medium rounded-lg transition-colors flex-shrink-0">
+      To'liq profil
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
+        <path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd"/>
+      </svg>
+    </a>
+  </div>
+
+  <!-- Status & Financial Summary Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+    <!-- Membership Status Box -->
+    <div class="bg-[#1A1E25] border border-[#252A33] rounded-xl p-3.5">
+      <span class="text-[11px] font-medium text-[#8A919E] uppercase tracking-wide block mb-1">A'zolik holati</span>
+      {% if active_membership %}
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-bold text-[#F0F2F5]">{{ active_membership.plan.name }}</p>
+            <p class="text-xs text-[#8A919E] mt-0.5">
+              Muddat: <span class="text-[#F0F2F5]">{{ active_membership.end_date|date:"d-M-Y" }}</span> gacha
+            </p>
+          </div>
+          <span class="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            Faol
+          </span>
+        </div>
+      {% else %}
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-semibold text-amber-400">Faol a'zolik yo'q</p>
+            <p class="text-xs text-[#8A919E] mt-0.5">Kunlik yoki oylik reja talab etiladi</p>
+          </div>
+          <span class="px-2 py-0.5 rounded text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            ⚠️ Yo'q
+          </span>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Balance Box -->
+    <div class="bg-[#1A1E25] border border-[#252A33] rounded-xl p-3.5">
+      <span class="text-[11px] font-medium text-[#8A919E] uppercase tracking-wide block mb-1">Hisob balansi</span>
+      <div class="flex items-center justify-between">
+        <div>
+          {% if balance > 0 %}
+            <p class="text-lg font-bold tabular-nums text-red-400">{{ balance|intcomma }} UZS</p>
+            <p class="text-xs text-red-400/80">💳 Qarzdorlik mavjud</p>
+          {% elif balance < 0 %}
+            <p class="text-lg font-bold tabular-nums text-emerald-400">{{ balance|intcomma }} UZS</p>
+            <p class="text-xs text-emerald-400/80">Ortiqcha to'lov (avans)</p>
+          {% else %}
+            <p class="text-lg font-bold tabular-nums text-[#F0F2F5]">0.00 UZS</p>
+            <p class="text-xs text-emerald-400/80">Qarzdorlik yo'q</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Flash Alerts (Errors & Receipts) -->
+  {% if payment_error %}
+    <div class="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
+        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+      </svg>
+      <span>To'lov xatosi: {{ payment_error }}</span>
+    </div>
+  {% endif %}
+
+  {% if last_receipt %}
+    <div class="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span>🧾 To'lov qabul qilindi: <strong>{{ last_receipt.amount|intcomma }} UZS</strong> ({{ last_receipt.get_payment_method_display }})</span>
+      </div>
+      <span class="text-[10px] text-emerald-400/70">Qoldiq: {{ last_receipt.balance_after|intcomma }} UZS</span>
+    </div>
+  {% endif %}
+
+  {% if sale_error %}
+    <div class="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
+        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+      </svg>
+      <span>Sotuv xatosi: {{ sale_error }}</span>
+    </div>
+  {% endif %}
+
+  <!-- ACTION 1: Attendance / Check-In / Check-Out -->
+  <div class="bg-[#1A1E25] border border-[#252A33] rounded-xl p-4">
+    <span class="text-xs font-semibold text-[#8A919E] uppercase tracking-wide block mb-3">Davomat amali</span>
+
+    {% if today_attendance %}
+      {% if not today_attendance.check_out %}
+        <!-- Currently in Gym -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-sky-500/10 border border-sky-500/20 rounded-lg">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
+              <span class="text-sm font-bold text-sky-400">Hozir zalda</span>
+            </div>
+            <p class="text-xs text-[#8A919E] mt-1">Kirgan vaqti: <strong class="text-[#F0F2F5]">{{ today_attendance.check_in|time:"H:i" }}</strong></p>
+          </div>
+          <form hx-post="{% url 'attendance:check_out' member.pk %}"
+                hx-target="#member-card"
+                hx-swap="innerHTML transition:true">
+            {% csrf_token %}
+            <button type="submit"
+                    class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow-lg shadow-red-600/20">
+              🚪 Chiqish (Check-Out)
+            </button>
+          </form>
+        </div>
+      {% else %}
+        <!-- Already checked out today -->
+        <div class="p-3 bg-[#13161B] border border-[#252A33] rounded-lg flex items-center justify-between">
+          <div class="text-xs text-[#8A919E]">
+            Bugun tashrif buyurgan: <span class="text-[#F0F2F5]">{{ today_attendance.check_in|time:"H:i" }}</span> — <span class="text-[#F0F2F5]">{{ today_attendance.check_out|time:"H:i" }}</span>
+          </div>
+          <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-[#1A1E25] text-[#8A919E] border border-[#252A33]">
+            Tugatilgan
+          </span>
+        </div>
+      {% endif %}
+    {% else %}
+      <!-- Not checked in yet -->
+      {% if active_membership %}
+        <form hx-post="{% url 'attendance:check_in' member.pk %}"
+              hx-target="#member-card"
+              hx-swap="innerHTML transition:true">
+          {% csrf_token %}
+          <button type="submit"
+                  class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20">
+            ✅ ZALGA KIRITISH (Check-In)
+          </button>
+        </form>
+      {% else %}
+        <div class="space-y-2">
+          <form hx-post="{% url 'attendance:add_daily_plan' member.pk %}"
+                hx-target="#member-card"
+                hx-swap="innerHTML transition:true">
+            {% csrf_token %}
+            <button type="submit"
+                    class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-amber-600/20">
+              ⚡ Kunlik tarif bilan kiritish (to'lov hisoblanadi)
+            </button>
+          </form>
+          <p class="text-[11px] text-[#8A919E] text-center">Yoki a'zo profilidan oylik a'zolik rejasini tanlang</p>
+        </div>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  <!-- TABS: Payment & Product Sale -->
+  <div x-data="{ tab: 'payment' }" class="bg-[#1A1E25] border border-[#252A33] rounded-xl overflow-hidden">
+    <!-- Tab Nav -->
+    <div class="flex border-b border-[#252A33] bg-[#13161B]">
+      <button @click="tab = 'payment'"
+              :class="tab === 'payment' ? 'border-b-2 border-emerald-500 text-emerald-400 font-semibold' : 'text-[#8A919E] hover:text-[#F0F2F5]'"
+              class="flex-1 py-2.5 px-4 text-xs text-center transition-colors flex items-center justify-center gap-1.5">
+        💳 To'lov qabul qilish
+      </button>
+      <button @click="tab = 'sale'"
+              :class="tab === 'sale' ? 'border-b-2 border-emerald-500 text-emerald-400 font-semibold' : 'text-[#8A919E] hover:text-[#F0F2F5]'"
+              class="flex-1 py-2.5 px-4 text-xs text-center transition-colors flex items-center justify-center gap-1.5">
+        🛒 Mahsulot sotish
+      </button>
+    </div>
+
+    <!-- TAB 1: Payment Form -->
+    <div x-show="tab === 'payment'" class="p-4">
+      <form hx-post="{% url 'billing:receive_payment' member.pk %}"
+            hx-target="#member-card"
+            hx-swap="innerHTML transition:true"
+            class="space-y-3">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-medium text-[#8A919E] uppercase mb-1">To'lov summasi (UZS)</label>
+            <input type="number" name="amount" step="1000" min="1000"
+                   value="{% if balance > 0 %}{{ balance|floatformat:0 }}{% endif %}"
+                   placeholder="Masalan: 200000"
+                   required
+                   class="w-full bg-[#13161B] border border-[#252A33] rounded-lg px-3 py-2 text-sm text-[#F0F2F5] focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-[11px] font-medium text-[#8A919E] uppercase mb-1">To'lov turi</label>
+            <select name="payment_method"
+                    class="w-full bg-[#13161B] border border-[#252A33] rounded-lg px-3 py-2 text-sm text-[#F0F2F5] focus:outline-none focus:border-emerald-500">
+              <option value="CASH">Naqd pul</option>
+              <option value="CARD">Plastik karta (Uzcard/Humo)</option>
+              <option value="TRANSFER">Bank o'tkazmasi (Payme/Click)</option>
+              <option value="OTHER">Boshqa</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit"
+                class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5">
+          💳 To'lovni tasdiqlash
+        </button>
+      </form>
+    </div>
+
+    <!-- TAB 2: Product Sale Form -->
+    <div x-show="tab === 'sale'" style="display:none;" class="p-4">
+      {% if products %}
+        <form hx-post="{% url 'sales:add_product' member.pk %}"
+              hx-target="#member-card"
+              hx-swap="innerHTML transition:true"
+              class="space-y-3">
+          {% csrf_token %}
+          <div class="grid grid-cols-3 gap-2">
+            <div class="col-span-2">
+              <label class="block text-[11px] font-medium text-[#8A919E] uppercase mb-1">Mahsulot</label>
+              <select name="product_id" required
+                      class="w-full bg-[#13161B] border border-[#252A33] rounded-lg px-3 py-2 text-xs text-[#F0F2F5] focus:outline-none focus:border-emerald-500">
+                {% for prod in products %}
+                  <option value="{{ prod.pk }}" {% if prod.stock_quantity <= 0 %}disabled{% endif %}>
+                    {{ prod.name }} — {{ prod.sale_price|intcomma }} UZS (qoldiq: {{ prod.stock_quantity }})
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-medium text-[#8A919E] uppercase mb-1">Miqdor</label>
+              <input type="number" name="quantity" min="1" max="100" value="1" required
+                     class="w-full bg-[#13161B] border border-[#252A33] rounded-lg px-3 py-2 text-xs text-[#F0F2F5] focus:outline-none focus:border-emerald-500">
+            </div>
+          </div>
+          <button type="submit"
+                  class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5">
+            🛒 Hisobga qo'shish (Sotish)
+          </button>
+        </form>
+      {% else %}
+        <p class="text-xs text-[#8A919E] text-center py-2">Faol mahsulotlar mavjud emas</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- Today's Purchases (if any) -->
+  {% if today_sales %}
+    <div class="bg-[#1A1E25] border border-[#252A33] rounded-xl p-3">
+      <span class="text-[11px] font-medium text-[#8A919E] uppercase tracking-wide block mb-2">Bugungi xaridlar</span>
+      <div class="space-y-1.5">
+        {% for sale in today_sales %}
+          <div class="flex items-center justify-between text-xs py-1 border-b border-[#252A33] last:border-0">
+            <span class="text-[#8A919E]">
+              {% for item in sale.items.all %}
+                {{ item.product.name }} (x{{ item.quantity }}){% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            </span>
+            <span class="font-semibold tabular-nums text-[#F0F2F5]">{{ sale.total_amount|intcomma }} UZS</span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+</div>

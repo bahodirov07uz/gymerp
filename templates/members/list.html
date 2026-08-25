@@ -1,0 +1,157 @@
+﻿{% extends "base.html" %}
+
+{% block title %}A'zolar ro'yxati{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Header & Actions -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-[#F0F2F5]">A'zolar</h1>
+      <p class="text-xs text-[#8A919E] mt-0.5">Barcha ro'yxatga olingan sportchilar bazasi</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="{% url 'members:create' %}"
+         class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition-colors shadow-lg shadow-emerald-600/20">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+          <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 00-1.5h-4.5v-4.5z"/>
+        </svg>
+        + Yangi a'zo
+      </a>
+    </div>
+  </div>
+
+  <!-- Search & Filter Bar -->
+  <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-4">
+    <form method="get" class="flex flex-col sm:flex-row items-center gap-3">
+      <div class="relative flex-1 w-full">
+        <input type="text"
+               name="q"
+               value="{{ query }}"
+               placeholder="Ism, familiya, telefon yoki kod bo'yicha qidiruv..."
+               class="w-full bg-[#1A1E25] border border-[#252A33] rounded-xl pl-10 pr-4 py-2.5 text-sm text-[#F0F2F5] placeholder-[#8A919E] focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-all">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#8A919E]">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+            <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <button type="submit"
+                class="flex-1 sm:flex-none px-4 py-2.5 bg-[#1A1E25] hover:bg-[#252A33] border border-[#252A33] text-[#F0F2F5] text-xs font-semibold rounded-xl transition-colors">
+          Qidirish
+        </button>
+        {% if query %}
+        <a href="{% url 'members:list' %}"
+           class="px-3 py-2.5 text-xs text-[#8A919E] hover:text-[#F0F2F5] transition-colors">
+          Tozalash
+        </a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <!-- Members Table -->
+  <div class="bg-[#13161B] border border-[#252A33] rounded-2xl overflow-hidden shadow-xl shadow-black/10">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-[#252A33] bg-[#1A1E25]/50">
+            <th class="px-5 py-3.5 text-[11px] font-semibold text-[#8A919E] uppercase tracking-wider">Kod</th>
+            <th class="px-5 py-3.5 text-[11px] font-semibold text-[#8A919E] uppercase tracking-wider">Sportchi</th>
+            <th class="px-5 py-3.5 text-[11px] font-semibold text-[#8A919E] uppercase tracking-wider">Telefon</th>
+            <th class="px-5 py-3.5 text-[11px] font-semibold text-[#8A919E] uppercase tracking-wider">Jinsi</th>
+            <th class="px-5 py-3.5 text-[11px] font-semibold text-[#8A919E] uppercase tracking-wider">Holati</th>
+            <th class="px-5 py-3.5 text-[11px] font-semibold text-[#8A919E] uppercase tracking-wider">Qo'shilgan</th>
+            <th class="px-5 py-3.5 text-[11px] font-semibold text-[#8A919E] uppercase tracking-wider text-right">Amal</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#252A33]">
+          {% for m in members %}
+          <tr class="hover:bg-[#1A1E25]/80 transition-colors group">
+            <td class="px-5 py-3.5 whitespace-nowrap">
+              <span class="font-mono text-xs text-[#8A919E] bg-[#1A1E25] px-2 py-1 rounded border border-[#252A33] group-hover:border-emerald-500/30 transition-colors">
+                {{ m.member_code }}
+              </span>
+            </td>
+            <td class="px-5 py-3.5 whitespace-nowrap">
+              <a href="{% url 'members:profile' m.pk %}" class="text-sm font-semibold text-[#F0F2F5] group-hover:text-emerald-400 transition-colors">
+                {{ m.full_name }}
+              </a>
+              {% if m.notes %}
+                <p class="text-[11px] text-[#8A919E] truncate max-w-xs">{{ m.notes }}</p>
+              {% endif %}
+            </td>
+            <td class="px-5 py-3.5 whitespace-nowrap text-xs text-[#8A919E]">
+              {{ m.phone }}
+            </td>
+            <td class="px-5 py-3.5 whitespace-nowrap text-xs text-[#8A919E]">
+              {{ m.get_gender_display|default:"—" }}
+            </td>
+            <td class="px-5 py-3.5 whitespace-nowrap">
+              {% if m.is_active %}
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  Faol
+                </span>
+              {% else %}
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-[#1A1E25] text-[#8A919E] border border-[#252A33]">
+                  Nofaol
+                </span>
+              {% endif %}
+            </td>
+            <td class="px-5 py-3.5 whitespace-nowrap text-xs text-[#8A919E]">
+              {{ m.created_at|date:"d-M-Y" }}
+            </td>
+            <td class="px-5 py-3.5 whitespace-nowrap text-right text-xs">
+              <a href="{% url 'members:profile' m.pk %}"
+                 class="inline-flex items-center gap-1 px-2.5 py-1 bg-[#1A1E25] hover:bg-[#252A33] text-[#F0F2F5] hover:text-emerald-400 border border-[#252A33] rounded-lg transition-colors">
+                Profil
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3">
+                  <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
+                </svg>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="px-5 py-12 text-center text-[#8A919E]">
+              <p class="text-sm font-medium">A'zolar topilmadi</p>
+              <p class="text-xs text-[#8A919E]/60 mt-1">Boshqa so'z bilan qidiring yoki yangi a'zo qo'shing</p>
+              <a href="{% url 'members:create' %}"
+                 class="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition-colors">
+                + Yangi a'zo qo'shish
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="px-5 py-3.5 border-t border-[#252A33] flex items-center justify-between text-xs text-[#8A919E] bg-[#1A1E25]/30">
+      <div>
+        Sahifa {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} (Jami: {{ page_obj.paginator.count }})
+      </div>
+      <div class="flex items-center gap-2">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}"
+           class="px-3 py-1.5 bg-[#1A1E25] hover:bg-[#252A33] border border-[#252A33] rounded-lg text-[#F0F2F5] transition-colors">
+          Oldingi
+        </a>
+        {% endif %}
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}"
+           class="px-3 py-1.5 bg-[#1A1E25] hover:bg-[#252A33] border border-[#252A33] rounded-lg text-[#F0F2F5] transition-colors">
+          Keyingi
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

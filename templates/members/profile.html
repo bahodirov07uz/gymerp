@@ -1,0 +1,315 @@
+﻿{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}{{ member.full_name }} — Profil{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Top Navigation & Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <a href="{% url 'members:list' %}"
+         class="p-2 bg-[#13161B] hover:bg-[#1A1E25] border border-[#252A33] rounded-xl text-[#8A919E] hover:text-[#F0F2F5] transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+          <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd"/>
+        </svg>
+      </a>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-2xl font-bold text-[#F0F2F5]">{{ member.full_name }}</h1>
+          {% if member.is_active %}
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              Faol
+            </span>
+          {% else %}
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20">
+              Nofaol
+            </span>
+          {% endif %}
+        </div>
+        <p class="text-xs text-[#8A919E] mt-0.5">
+          Kod: <span class="font-mono text-[#F0F2F5]">{{ member.member_code }}</span> • Telefon: <span class="text-[#F0F2F5]">{{ member.phone }}</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Quick action buttons -->
+    <div class="flex items-center gap-2">
+      <a href="{% url 'members:reception' %}"
+         class="px-3 py-2 bg-[#1A1E25] hover:bg-[#252A33] border border-[#252A33] text-[#F0F2F5] text-xs font-medium rounded-xl transition-colors">
+        Qabul stoliga o'tish
+      </a>
+    </div>
+  </div>
+
+  <!-- Overview Stats Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+    <!-- Balance Card -->
+    <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-5">
+      <span class="text-xs font-medium text-[#8A919E] uppercase tracking-wide">Hisob balansi</span>
+      <div class="mt-2">
+        {% if balance > 0 %}
+          <p class="text-2xl font-bold tabular-nums text-red-400">{{ balance|intcomma }} UZS</p>
+          <p class="text-xs text-red-400/80 mt-0.5">💳 Qarz mavjud</p>
+        {% elif balance < 0 %}
+          <p class="text-2xl font-bold tabular-nums text-emerald-400">{{ balance|intcomma }} UZS</p>
+          <p class="text-xs text-emerald-400/80 mt-0.5">Ortiqcha to'lov (avans)</p>
+        {% else %}
+          <p class="text-2xl font-bold tabular-nums text-[#F0F2F5]">0.00 UZS</p>
+          <p class="text-xs text-emerald-400/80 mt-0.5">Qarzdorlik yo'q</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Active Plan Card -->
+    <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-5">
+      <span class="text-xs font-medium text-[#8A919E] uppercase tracking-wide">Amaldagi tarif</span>
+      <div class="mt-2">
+        {% if active_membership %}
+          <p class="text-lg font-bold text-[#F0F2F5]">{{ active_membership.plan.name }}</p>
+          <p class="text-xs text-[#8A919E] mt-0.5">
+            Muddati: <span class="text-[#F0F2F5]">{{ active_membership.end_date|date:"d-M-Y" }}</span> gacha
+          </p>
+        {% else %}
+          <p class="text-lg font-semibold text-amber-400">Faol reja yo'q</p>
+          <p class="text-xs text-[#8A919E] mt-0.5">A'zolik muddati tugagan yoki olinmagan</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Member Details Card -->
+    <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-5 text-xs text-[#8A919E] space-y-1.5">
+      <span class="font-medium uppercase tracking-wide block text-[#8A919E]">Ma'lumotlar</span>
+      <p>Jinsi: <strong class="text-[#F0F2F5]">{{ member.get_gender_display|default:"Ko'rsatilmagan" }}</strong></p>
+      <p>Tug'ilgan sana: <strong class="text-[#F0F2F5]">{{ member.date_of_birth|date:"d-M-Y"|default:"Ko'rsatilmagan" }}</strong></p>
+      {% if member.address %}<p>Manzil: <strong class="text-[#F0F2F5]">{{ member.address }}</strong></p>{% endif %}
+      {% if member.notes %}<p class="text-amber-400/90">Eslatma: {{ member.notes }}</p>{% endif %}
+    </div>
+
+  </div>
+
+  <!-- TABS: Sections (Memberships, Attendance, Purchases, Payments, Ledger) -->
+  <div x-data="{ tab: 'memberships' }" class="bg-[#13161B] border border-[#252A33] rounded-2xl overflow-hidden shadow-xl shadow-black/20">
+
+    <!-- Tab Bar -->
+    <div class="flex border-b border-[#252A33] overflow-x-auto bg-[#1A1E25]/50">
+      <button @click="tab = 'memberships'"
+              :class="tab === 'memberships' ? 'border-b-2 border-emerald-500 text-emerald-400 font-semibold' : 'text-[#8A919E] hover:text-[#F0F2F5]'"
+              class="py-3 px-5 text-xs whitespace-nowrap transition-colors">
+        A'zoliklar ({{ memberships|length }})
+      </button>
+      <button @click="tab = 'attendance'"
+              :class="tab === 'attendance' ? 'border-b-2 border-emerald-500 text-emerald-400 font-semibold' : 'text-[#8A919E] hover:text-[#F0F2F5]'"
+              class="py-3 px-5 text-xs whitespace-nowrap transition-colors">
+        Davomat ({{ attendances|length }})
+      </button>
+      <button @click="tab = 'sales'"
+              :class="tab === 'sales' ? 'border-b-2 border-emerald-500 text-emerald-400 font-semibold' : 'text-[#8A919E] hover:text-[#F0F2F5]'"
+              class="py-3 px-5 text-xs whitespace-nowrap transition-colors">
+        Xaridlar ({{ product_sales|length }})
+      </button>
+      <button @click="tab = 'payments'"
+              :class="tab === 'payments' ? 'border-b-2 border-emerald-500 text-emerald-400 font-semibold' : 'text-[#8A919E] hover:text-[#F0F2F5]'"
+              class="py-3 px-5 text-xs whitespace-nowrap transition-colors">
+        To'lovlar ({{ payments|length }})
+      </button>
+      <button @click="tab = 'ledger'"
+              :class="tab === 'ledger' ? 'border-b-2 border-emerald-500 text-emerald-400 font-semibold' : 'text-[#8A919E] hover:text-[#F0F2F5]'"
+              class="py-3 px-5 text-xs whitespace-nowrap transition-colors">
+        Moliyaviy Ledger ({{ ledger|length }})
+      </button>
+    </div>
+
+    <!-- TAB 1: MEMBERSHIPS -->
+    <div x-show="tab === 'memberships'" class="p-5 space-y-5">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-[#252A33] text-[#8A919E] uppercase font-semibold">
+              <th class="py-2.5 px-3">Tarif</th>
+              <th class="py-2.5 px-3">Boshlanish</th>
+              <th class="py-2.5 px-3">Tugash</th>
+              <th class="py-2.5 px-3">Narxi</th>
+              <th class="py-2.5 px-3">Holati</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#252A33]">
+            {% for m in memberships %}
+            <tr class="hover:bg-[#1A1E25]/50 transition-colors">
+              <td class="py-2.5 px-3 font-semibold text-[#F0F2F5]">{{ m.plan.name }}</td>
+              <td class="py-2.5 px-3 text-[#8A919E]">{{ m.start_date|date:"d-M-Y" }}</td>
+              <td class="py-2.5 px-3 text-[#8A919E]">{{ m.end_date|date:"d-M-Y" }}</td>
+              <td class="py-2.5 px-3 tabular-nums font-medium text-[#F0F2F5]">{{ m.price_at_purchase|intcomma }} UZS</td>
+              <td class="py-2.5 px-3">
+                {% if m.status == 'ACTIVE' %}
+                  <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Faol</span>
+                {% elif m.status == 'EXPIRED' %}
+                  <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-[#1A1E25] text-[#8A919E] border border-[#252A33]">Tugagan</span>
+                {% else %}
+                  <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-red-500/10 text-red-400 border border-red-500/20">{{ m.get_status_display }}</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="py-8 text-center text-[#8A919E]">A'zolik yozuvlari yo'q</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 2: ATTENDANCE -->
+    <div x-show="tab === 'attendance'" style="display:none;" class="p-5">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-[#252A33] text-[#8A919E] uppercase font-semibold">
+              <th class="py-2.5 px-3">Sana</th>
+              <th class="py-2.5 px-3">Kirish vaqti</th>
+              <th class="py-2.5 px-3">Chiqish vaqti</th>
+              <th class="py-2.5 px-3">Tarif turi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#252A33]">
+            {% for a in attendances %}
+            <tr class="hover:bg-[#1A1E25]/50 transition-colors">
+              <td class="py-2.5 px-3 font-semibold text-[#F0F2F5]">{{ a.date|date:"d-M-Y" }}</td>
+              <td class="py-2.5 px-3 text-emerald-400 font-medium">{{ a.check_in|time:"H:i" }}</td>
+              <td class="py-2.5 px-3 text-[#8A919E]">{{ a.check_out|time:"H:i"|default:"Chiqmagan" }}</td>
+              <td class="py-2.5 px-3 text-[#8A919E]">{{ a.membership.plan.name|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="py-8 text-center text-[#8A919E]">Davomat yozuvlari yo'q</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: PURCHASES -->
+    <div x-show="tab === 'sales'" style="display:none;" class="p-5">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-[#252A33] text-[#8A919E] uppercase font-semibold">
+              <th class="py-2.5 px-3">Sana</th>
+              <th class="py-2.5 px-3">Mahsulotlar</th>
+              <th class="py-2.5 px-3 text-right">Summa</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#252A33]">
+            {% for s in product_sales %}
+            <tr class="hover:bg-[#1A1E25]/50 transition-colors">
+              <td class="py-2.5 px-3 text-[#8A919E]">{{ s.created_at|date:"d-M-Y H:i" }}</td>
+              <td class="py-2.5 px-3 text-[#F0F2F5]">
+                {% for item in s.items.all %}
+                  {{ item.product.name }} (x{{ item.quantity }}){% if not forloop.last %}, {% endif %}
+                {% endfor %}
+              </td>
+              <td class="py-2.5 px-3 text-right font-bold tabular-nums text-[#F0F2F5]">{{ s.total_amount|intcomma }} UZS</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="py-8 text-center text-[#8A919E]">Xaridlar yozuvlari yo'q</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 4: PAYMENTS -->
+    <div x-show="tab === 'payments'" style="display:none;" class="p-5">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-[#252A33] text-[#8A919E] uppercase font-semibold">
+              <th class="py-2.5 px-3">Sana</th>
+              <th class="py-2.5 px-3">Usul</th>
+              <th class="py-2.5 px-3">Summa</th>
+              <th class="py-2.5 px-3">Oldingi balans</th>
+              <th class="py-2.5 px-3">Keyingi balans</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#252A33]">
+            {% for p in payments %}
+            <tr class="hover:bg-[#1A1E25]/50 transition-colors">
+              <td class="py-2.5 px-3 text-[#8A919E]">{{ p.created_at|date:"d-M-Y H:i" }}</td>
+              <td class="py-2.5 px-3 text-[#F0F2F5]">{{ p.get_payment_method_display }}</td>
+              <td class="py-2.5 px-3 font-bold tabular-nums text-emerald-400">{{ p.amount|intcomma }} UZS</td>
+              <td class="py-2.5 px-3 tabular-nums text-[#8A919E]">{{ p.balance_before|intcomma }} UZS</td>
+              <td class="py-2.5 px-3 tabular-nums text-[#8A919E]">{{ p.balance_after|intcomma }} UZS</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="py-8 text-center text-[#8A919E]">To'lovlar tarixi yo'q</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 5: FINANCIAL LEDGER -->
+    <div x-show="tab === 'ledger'" style="display:none;" class="p-5 space-y-3">
+      <div class="flex items-center justify-between text-xs text-[#8A919E]">
+        <p>Ledger — o'zgartirib bo'lmas moliyaviy haqiqat manbai (Append-only).</p>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-[#252A33] text-[#8A919E] uppercase font-semibold">
+              <th class="py-2.5 px-3">Sana</th>
+              <th class="py-2.5 px-3">Turi</th>
+              <th class="py-2.5 px-3">Tavsif</th>
+              <th class="py-2.5 px-3">Yo'nalish</th>
+              <th class="py-2.5 px-3 text-right">Summa</th>
+              {% if user.is_manager %}
+              <th class="py-2.5 px-3 text-right">Amal</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#252A33]">
+            {% for entry in ledger %}
+            <tr class="hover:bg-[#1A1E25]/50 transition-colors {% if entry.reversed_by %}opacity-40 line-through{% endif %}">
+              <td class="py-2.5 px-3 text-[#8A919E] whitespace-nowrap">{{ entry.created_at|date:"d-M-Y H:i" }}</td>
+              <td class="py-2.5 px-3 font-medium text-[#F0F2F5]">{{ entry.get_transaction_type_display }}</td>
+              <td class="py-2.5 px-3 text-[#8A919E]">{{ entry.description }}</td>
+              <td class="py-2.5 px-3">
+                {% if entry.direction == 'DEBIT' %}
+                  <span class="text-red-400 font-bold">Qarz (+)</span>
+                {% else %}
+                  <span class="text-emerald-400 font-bold">To'lov (-)</span>
+                {% endif %}
+              </td>
+              <td class="py-2.5 px-3 text-right font-bold tabular-nums {% if entry.direction == 'DEBIT' %}text-red-400{% else %}text-emerald-400{% endif %}">
+                {% if entry.direction == 'DEBIT' %}+{% else %}-{% endif %}{{ entry.amount|intcomma }} UZS
+              </td>
+              {% if user.is_manager %}
+              <td class="py-2.5 px-3 text-right">
+                {% if not entry.reversed_by and not entry.reverses %}
+                  <form method="post" action="{% url 'billing:reverse_entry' entry.pk %}"
+                        onsubmit="return confirm('Haqiqatan ham ushbu yozuvni bekor qilib teskari yozuv kiritmoqchimisiz?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="reason" value="Manager manual correction">
+                    <button type="submit"
+                            class="px-2 py-0.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded text-[10px] transition-colors">
+                      Bekor qilish
+                    </button>
+                  </form>
+                {% else %}
+                  <span class="text-[10px] text-[#8A919E]">Tuzatilgan</span>
+                {% endif %}
+              </td>
+              {% endif %}
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="py-8 text-center text-[#8A919E]">Ledger yozuvlari yo'q</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

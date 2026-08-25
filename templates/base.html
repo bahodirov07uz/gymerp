@@ -1,0 +1,234 @@
+﻿{% load static humanize %}
+<!DOCTYPE html>
+<html lang="uz" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}GymCRM{% endblock %} — Sport Zal Boshqaruvi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #0D0F12; color: #F0F2F5; }
+    .htmx-indicator { display: none; }
+    .htmx-request .htmx-indicator { display: inline-flex; }
+    .htmx-request.htmx-indicator { display: inline-flex; }
+    .htmx-settling { opacity: 0.8; }
+    .htmx-swapping { opacity: 0; transition: opacity 100ms ease-in; }
+    .htmx-added { transition: opacity 200ms ease-out; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #13161B; }
+    ::-webkit-scrollbar-thumb { background: #252A33; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #8A919E; }
+    input[type="number"]::-webkit-inner-spin-button { opacity: 0.5; }
+    .nav-link { @apply flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-[#8A919E] hover:text-[#F0F2F5] hover:bg-[#1A1E25] transition-colors; }
+    .nav-link.active { @apply bg-emerald-600/10 text-emerald-400 border border-emerald-600/20; }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen bg-[#0D0F12] antialiased">
+
+  {% if user.is_authenticated %}
+  <!-- Mobile overlay -->
+  <div x-data="{ open: false }" @keydown.escape.window="open = false">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-56 bg-[#13161B] border-r border-[#252A33] flex flex-col
+             transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out"
+      :class="open ? 'translate-x-0' : ''">
+
+      <!-- Logo -->
+      <div class="flex items-center gap-3 px-4 py-4 border-b border-[#252A33]">
+        <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-white">
+            <path d="M10.75 16.82A7.462 7.462 0 0115 15.5c.71 0 1.396.098 2.046.282A.75.75 0 0018 15.06v-11a.75.75 0 00-.546-.721A9.006 9.006 0 0015 3a8.963 8.963 0 00-4.25 1.065V16.82zM9.25 4.065A8.963 8.963 0 005 3c-.85 0-1.673.118-2.454.339A.75.75 0 002 4.06v11a.75.75 0 00.954.721A7.506 7.506 0 015 15.5c1.579 0 3.042.487 4.25 1.32V4.065z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-bold text-[#F0F2F5]">GymCRM</p>
+          <p class="text-xs text-[#8A919E]">Boshqaruv tizimi</p>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
+
+        <p class="text-xs font-medium text-[#8A919E] uppercase tracking-wider px-3 mb-2">Asosiy</p>
+        <a href="{% url 'dashboard:index' %}"
+           class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors
+                  {% if request.resolver_match.namespace == 'dashboard' %}bg-emerald-600/10 text-emerald-400 border border-emerald-600/20{% else %}text-[#8A919E] hover:text-[#F0F2F5] hover:bg-[#1A1E25]{% endif %}">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
+            <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd"/>
+          </svg>
+          Dashboard
+        </a>
+
+        <a href="{% url 'members:reception' %}"
+           class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors
+                  {% if request.resolver_match.url_name == 'reception' %}bg-emerald-600/10 text-emerald-400 border border-emerald-600/20{% else %}text-[#8A919E] hover:text-[#F0F2F5] hover:bg-[#1A1E25]{% endif %}">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
+            <path d="M2.5 3A1.5 1.5 0 001 4.5v4A1.5 1.5 0 002.5 10h15A1.5 1.5 0 0019 8.5v-4A1.5 1.5 0 0017.5 3h-15zM1 12.5A1.5 1.5 0 002.5 11h15a1.5 1.5 0 011.5 1.5v4a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 011 16.5v-4z"/>
+          </svg>
+          Qabul
+        </a>
+
+        <a href="{% url 'members:list' %}"
+           class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors
+                  {% if request.resolver_match.namespace == 'members' and request.resolver_match.url_name == 'list' %}bg-emerald-600/10 text-emerald-400 border border-emerald-600/20{% else %}text-[#8A919E] hover:text-[#F0F2F5] hover:bg-[#1A1E25]{% endif %}">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
+            <path d="M7 8a3 3 0 100-6 3 3 0 000 6zM14.5 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM1.615 16.428a1.224 1.224 0 01-.569-1.175 6.002 6.002 0 0111.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 017 17a9.953 9.953 0 01-5.385-1.572zM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 00-1.588-3.755 4.502 4.502 0 015.874 2.636.818.818 0 01-.36.98A7.465 7.465 0 0114.5 16z"/>
+          </svg>
+          A'zolar
+        </a>
+
+        <div class="my-3 border-t border-[#252A33]"></div>
+        <p class="text-xs font-medium text-[#8A919E] uppercase tracking-wider px-3 mb-2">Moliya</p>
+
+        <a href="{% url 'billing:debtors' %}"
+           class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors
+                  {% if request.resolver_match.namespace == 'billing' %}bg-emerald-600/10 text-emerald-400 border border-emerald-600/20{% else %}text-[#8A919E] hover:text-[#F0F2F5] hover:bg-[#1A1E25]{% endif %}">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
+            <path fill-rule="evenodd" d="M1 4a1 1 0 011-1h16a1 1 0 011 1v8a1 1 0 01-1 1H2a1 1 0 01-1-1V4zm12 4a3 3 0 11-6 0 3 3 0 016 0zM4 9a1 1 0 100-2 1 1 0 000 2zm13-1a1 1 0 11-2 0 1 1 0 012 0zM1.75 14.5a.75.75 0 000 1.5c4.417 0 8.693.603 12.749 1.73 1.111.309 2.251-.512 2.251-1.696v-.784a.75.75 0 00-1.5 0v.784a.272.272 0 01-.35.25A49.043 49.043 0 001.75 14.5z" clip-rule="evenodd"/>
+          </svg>
+          💳 Qarzdorlar
+        </a>
+
+        {% if user.is_manager %}
+        <a href="{% url 'inventory:list' %}"
+           class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors
+                  {% if request.resolver_match.namespace == 'inventory' %}bg-emerald-600/10 text-emerald-400 border border-emerald-600/20{% else %}text-[#8A919E] hover:text-[#F0F2F5] hover:bg-[#1A1E25]{% endif %}">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
+            <path d="M2 3a1 1 0 00-1 1v1a1 1 0 001 1h16a1 1 0 001-1V4a1 1 0 00-1-1H2zM2 7.5h16l-.811 7.71a2 2 0 01-1.99 1.79H4.802a2 2 0 01-1.99-1.79L2 7.5z"/>
+          </svg>
+          Ombor
+        </a>
+        {% endif %}
+
+        <div class="my-3 border-t border-[#252A33]"></div>
+        <p class="text-xs font-medium text-[#8A919E] uppercase tracking-wider px-3 mb-2">Hisobotlar</p>
+
+        <a href="{% url 'reports:daily' %}"
+           class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors
+                  {% if request.resolver_match.url_name == 'daily' %}bg-emerald-600/10 text-emerald-400 border border-emerald-600/20{% else %}text-[#8A919E] hover:text-[#F0F2F5] hover:bg-[#1A1E25]{% endif %}">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
+            <path fill-rule="evenodd" d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75z" clip-rule="evenodd"/>
+          </svg>
+          Kunlik hisobot
+        </a>
+
+        <a href="{% url 'reports:monthly' %}"
+           class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors
+                  {% if request.resolver_match.url_name == 'monthly' %}bg-emerald-600/10 text-emerald-400 border border-emerald-600/20{% else %}text-[#8A919E] hover:text-[#F0F2F5] hover:bg-[#1A1E25]{% endif %}">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
+            <path d="M15.98 1.804a1 1 0 00-1.96 0l-.24 1.192a1 1 0 01-.784.785l-1.192.238a1 1 0 000 1.962l1.192.238a1 1 0 01.785.785l.238 1.192a1 1 0 001.962 0l.238-1.192a1 1 0 01.785-.785l1.192-.238a1 1 0 000-1.962l-1.192-.238a1 1 0 01-.785-.785l-.238-1.192zM6.949 5.684a1 1 0 00-1.898 0l-.683 2.051a1 1 0 01-.633.633l-2.051.683a1 1 0 000 1.898l2.051.684a1 1 0 01.633.632l.683 2.051a1 1 0 001.898 0l.683-2.051a1 1 0 01.633-.633l2.051-.683a1 1 0 000-1.898l-2.051-.683a1 1 0 01-.633-.633L6.95 5.684z"/>
+          </svg>
+          Oylik hisobot
+        </a>
+
+        <a href="{% url 'reports:products' %}"
+           class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors
+                  {% if request.resolver_match.url_name == 'products' %}bg-emerald-600/10 text-emerald-400 border border-emerald-600/20{% else %}text-[#8A919E] hover:text-[#F0F2F5] hover:bg-[#1A1E25]{% endif %}">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
+            <path d="M10.362 1.093a.75.75 0 00-.724 0L2.523 5.018 10 9.143l7.477-4.125-7.115-3.925zM18 6.443l-7.25 4v8.25l6.862-3.786A.75.75 0 0018 14.25V6.443zm-8.75 12.25v-8.25L2 6.443v7.807a.75.75 0 00.388.657l6.862 3.786z"/>
+          </svg>
+          Mahsulotlar
+        </a>
+
+        <a href="{% url 'reports:expiring' %}"
+           class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors
+                  {% if request.resolver_match.url_name == 'expiring' %}bg-emerald-600/10 text-emerald-400 border border-emerald-600/20{% else %}text-[#8A919E] hover:text-[#F0F2F5] hover:bg-[#1A1E25]{% endif %}">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clip-rule="evenodd"/>
+          </svg>
+          ⏳ Muddatlar
+        </a>
+      </nav>
+
+      <!-- User info at bottom -->
+      <div class="border-t border-[#252A33] p-3">
+        <div class="flex items-center gap-2.5 px-2 py-2">
+          <div class="w-7 h-7 rounded-full bg-emerald-600/20 border border-emerald-600/30 flex items-center justify-center flex-shrink-0">
+            <span class="text-xs font-bold text-emerald-400">{{ user.username|first|upper }}</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-semibold text-[#F0F2F5] truncate">{{ user.get_full_name|default:user.username }}</p>
+            <p class="text-xs text-[#8A919E] truncate">{{ user.get_role_display }}</p>
+          </div>
+        </div>
+        <form method="post" action="{% url 'accounts:logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-[#8A919E] hover:text-red-400 hover:bg-red-500/5 transition-colors mt-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
+              <path fill-rule="evenodd" d="M3 4.25A2.25 2.25 0 015.25 2h5.5A2.25 2.25 0 0113 4.25v2a.75.75 0 01-1.5 0v-2a.75.75 0 00-.75-.75h-5.5a.75.75 0 00-.75.75v11.5c0 .414.336.75.75.75h5.5a.75.75 0 00.75-.75v-2a.75.75 0 011.5 0v2A2.25 2.25 0 0110.75 18h-5.5A2.25 2.25 0 013 15.75V4.25z" clip-rule="evenodd"/>
+              <path fill-rule="evenodd" d="M19 10a.75.75 0 00-.75-.75H8.704l1.048-.943a.75.75 0 10-1.004-1.114l-2.5 2.25a.75.75 0 000 1.114l2.5 2.25a.75.75 0 101.004-1.114l-1.048-.943h9.546A.75.75 0 0019 10z" clip-rule="evenodd"/>
+            </svg>
+            Chiqish
+          </button>
+        </form>
+      </div>
+    </aside>
+
+    <!-- Mobile overlay backdrop -->
+    <div class="fixed inset-0 z-30 bg-black/60 lg:hidden" x-show="open" @click="open = false"
+         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" style="display:none;"></div>
+
+    <!-- MAIN LAYOUT -->
+    <div class="lg:ml-56 min-h-screen flex flex-col">
+
+      <!-- TOP BAR (mobile) -->
+      <header class="lg:hidden sticky top-0 z-20 bg-[#13161B] border-b border-[#252A33] flex items-center justify-between px-4 h-14">
+        <button @click="open = !open" class="p-1.5 rounded-lg text-[#8A919E] hover:text-[#F0F2F5] hover:bg-[#1A1E25] transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+            <path fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5A.75.75 0 012 10z" clip-rule="evenodd"/>
+          </svg>
+        </button>
+        <span class="text-sm font-bold text-[#F0F2F5]">GymCRM</span>
+        <div class="w-8 h-8 rounded-full bg-emerald-600/20 flex items-center justify-center">
+          <span class="text-xs font-bold text-emerald-400">{{ user.username|first|upper }}</span>
+        </div>
+      </header>
+
+      <!-- FLASH MESSAGES -->
+      {% if messages %}
+      <div class="px-4 sm:px-6 lg:px-8 pt-4 space-y-2">
+        {% for message in messages %}
+        <div x-data="{ show: true }" x-show="show" x-transition
+             class="flex items-start gap-3 p-3 rounded-xl text-sm border
+                    {% if message.tags == 'success' %}bg-emerald-500/10 border-emerald-500/20 text-emerald-400
+                    {% elif message.tags == 'error' %}bg-red-500/10 border-red-500/20 text-red-400
+                    {% elif message.tags == 'warning' %}bg-amber-500/10 border-amber-500/20 text-amber-400
+                    {% else %}bg-sky-500/10 border-sky-500/20 text-sky-400{% endif %}">
+          <span class="flex-1">{{ message }}</span>
+          <button @click="show = false" class="flex-shrink-0 opacity-60 hover:opacity-100">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+              <path d="M5.28 4.22a.75.75 0 00-1.06 1.06L6.94 8l-2.72 2.72a.75.75 0 101.06 1.06L8 9.06l2.72 2.72a.75.75 0 101.06-1.06L9.06 8l2.72-2.72a.75.75 0 00-1.06-1.06L8 6.94 5.28 4.22z"/>
+            </svg>
+          </button>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- PAGE CONTENT -->
+      <main class="flex-1 px-4 sm:px-6 lg:px-8 py-6">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+
+  </div><!-- x-data wrapper -->
+
+  {% else %}
+  <!-- UNAUTHENTICATED: just content, no sidebar -->
+  <div class="min-h-screen bg-[#0D0F12] flex items-center justify-center">
+    {% block auth_content %}{% endblock %}
+  </div>
+  {% endif %}
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

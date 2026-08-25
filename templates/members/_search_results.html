@@ -1,0 +1,57 @@
+﻿<div class="space-y-1">
+  {% if members %}
+    <div class="px-1 py-1.5 text-[11px] font-medium text-[#8A919E] uppercase tracking-wide flex justify-between items-center">
+      <span>Topilgan a'zolar ({{ members|length }})</span>
+      <span class="text-[10px] text-[#8A919E]/60">Tanlash uchun bosing</span>
+    </div>
+    <div class="space-y-1 max-h-[360px] overflow-y-auto pr-1">
+      {% for m in members %}
+      <div class="p-3 bg-[#1A1E25] hover:bg-[#252A33] border border-[#252A33] hover:border-emerald-500/40 rounded-xl transition-all cursor-pointer group"
+           hx-get="{% url 'members:profile' m.pk %}?partial=1"
+           hx-target="#member-card"
+           hx-swap="innerHTML transition:true">
+        <div class="flex items-center justify-between gap-2">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-semibold text-[#F0F2F5] group-hover:text-emerald-400 transition-colors truncate">
+                {{ m.full_name }}
+              </span>
+              {% if m.is_active %}
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  Faol
+                </span>
+              {% else %}
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#13161B] text-[#8A919E] border border-[#252A33]">
+                  Nofaol
+                </span>
+              {% endif %}
+            </div>
+            <div class="flex items-center gap-3 text-xs text-[#8A919E] mt-1">
+              <span class="font-mono text-[#F0F2F5]/80">{{ m.member_code }}</span>
+              <span>•</span>
+              <span>{{ m.phone }}</span>
+            </div>
+          </div>
+          <div class="flex-shrink-0 text-right">
+            <span class="text-xs text-[#8A919E] group-hover:text-emerald-400 flex items-center gap-1 transition-colors">
+              Tanlash
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
+                <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-8 px-4 bg-[#1A1E25] border border-[#252A33] rounded-xl">
+      <p class="text-sm font-medium text-[#8A919E]">A'zolar topilmadi</p>
+      <p class="text-xs text-[#8A919E]/60 mt-1">Ism, familiya, telefon yoki kod orqali qidiring</p>
+      <a href="{% url 'members:create' %}"
+         class="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition-colors">
+        + Yangi a'zo qo'shish
+      </a>
+    </div>
+  {% endif %}
+</div>

@@ -1,0 +1,194 @@
+﻿{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Header & Date filter -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-[#F0F2F5]">Dashboard</h1>
+      <p class="text-xs text-[#8A919E] mt-0.5">Zal ko'rsatkichlari va umumiy holat</p>
+    </div>
+    <form method="get" class="flex items-center gap-2">
+      <input type="date" name="date" value="{{ as_of|date:'Y-m-d' }}"
+        class="bg-[#1A1E25] border border-[#252A33] rounded-lg px-3 py-1.5 text-xs text-[#F0F2F5] focus:outline-none focus:border-emerald-500 transition-colors">
+      <button type="submit"
+        class="px-3 py-1.5 bg-[#1A1E25] hover:bg-[#252A33] border border-[#252A33] text-[#F0F2F5] text-xs font-medium rounded-lg transition-colors">
+        Ko'rish
+      </button>
+      {% if as_of != today %}
+      <a href="{% url 'dashboard:index' %}"
+        class="px-2.5 py-1.5 text-xs text-[#8A919E] hover:text-[#F0F2F5] transition-colors">
+        Bugun
+      </a>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- KPI Grid (8 Cards) -->
+  <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+    <!-- Active Members -->
+    <div class="bg-[#13161B] border border-[#252A33] rounded-xl p-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-medium text-[#8A919E] uppercase tracking-wide">Faol a'zolar</span>
+        <div class="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+            <path d="M7 8a3 3 0 100-6 3 3 0 000 6zM14.5 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM1.615 16.428a1.224 1.224 0 01-.569-1.175 6.002 6.002 0 0111.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 017 17a9.953 9.953 0 01-5.385-1.572zM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 00-1.588-3.755 4.502 4.502 0 015.874 2.636.818.818 0 01-.36.98A7.465 7.465 0 0114.5 16z"/>
+          </svg>
+        </div>
+      </div>
+      <p class="text-2xl font-bold tabular-nums text-[#F0F2F5]">{{ summary.active_members }}</p>
+      <p class="text-xs text-[#8A919E] mt-1">Ro'yxatdagi faol a'zolar</p>
+    </div>
+
+    <!-- Today Visitors -->
+    <div class="bg-[#13161B] border border-[#252A33] rounded-xl p-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-medium text-[#8A919E] uppercase tracking-wide">Bugungi tashrif</span>
+        <div class="w-7 h-7 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-400">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+      </div>
+      <p class="text-2xl font-bold tabular-nums text-[#F0F2F5]">{{ summary.today_visitors }}</p>
+      <p class="text-xs text-[#8A919E] mt-1">Check-in qilinganlar</p>
+    </div>
+
+    <!-- Today Revenue -->
+    <div class="bg-[#13161B] border border-[#252A33] rounded-xl p-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-medium text-[#8A919E] uppercase tracking-wide">Bugungi tushum</span>
+        <div class="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+            <path fill-rule="evenodd" d="M1 4a1 1 0 011-1h16a1 1 0 011 1v8a1 1 0 01-1 1H2a1 1 0 01-1-1V4zm12 4a3 3 0 11-6 0 3 3 0 016 0zM4 9a1 1 0 100-2 1 1 0 000 2zm13-1a1 1 0 11-2 0 1 1 0 012 0zM1.75 14.5a.75.75 0 000 1.5c4.417 0 8.693.603 12.749 1.73 1.111.309 2.251-.512 2.251-1.696v-.784a.75.75 0 00-1.5 0v.784a.272.272 0 01-.35.25A49.043 49.043 0 001.75 14.5z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+      </div>
+      <p class="text-2xl font-bold tabular-nums text-emerald-400">{{ summary.today_revenue|intcomma }}</p>
+      <p class="text-xs text-[#8A919E] mt-1">UZS (hisoblangan summa)</p>
+    </div>
+
+    <!-- Monthly Revenue -->
+    <div class="bg-[#13161B] border border-[#252A33] rounded-xl p-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-medium text-[#8A919E] uppercase tracking-wide">Oylik tushum</span>
+        <div class="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+            <path d="M15.98 1.804a1 1 0 00-1.96 0l-.24 1.192a1 1 0 01-.784.785l-1.192.238a1 1 0 000 1.962l1.192.238a1 1 0 01.785.785l.238 1.192a1 1 0 001.962 0l.238-1.192a1 1 0 01.785-.785l1.192-.238a1 1 0 000-1.962l-1.192-.238a1 1 0 01-.785-.785l-.238-1.192z"/>
+          </svg>
+        </div>
+      </div>
+      <p class="text-2xl font-bold tabular-nums text-emerald-400">{{ summary.monthly_revenue|intcomma }}</p>
+      <p class="text-xs text-[#8A919E] mt-1">UZS (oy boshidan buyon)</p>
+    </div>
+
+    <!-- Outstanding Debt -->
+    <div class="bg-[#13161B] border border-[#252A33] rounded-xl p-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-medium text-[#8A919E] uppercase tracking-wide">Jami qarz</span>
+        <div class="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+      </div>
+      <p class="text-2xl font-bold tabular-nums text-red-400">{{ summary.outstanding_debt|intcomma }}</p>
+      <p class="text-xs text-[#8A919E] mt-1">UZS (a'zolardagi qarz)</p>
+    </div>
+
+    <!-- Active Memberships -->
+    <div class="bg-[#13161B] border border-[#252A33] rounded-xl p-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-medium text-[#8A919E] uppercase tracking-wide">Faol a'zoliklar</span>
+        <div class="w-7 h-7 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-400">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+            <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 000 2h6a1 1 0 100-2H7zm6 5a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1zm-4 4a1 1 0 00-1 1v1a1 1 0 102 0v-1a1 1 0 00-1-1zm-2-2a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+      </div>
+      <p class="text-2xl font-bold tabular-nums text-[#F0F2F5]">{{ summary.active_memberships }}</p>
+      <p class="text-xs text-[#8A919E] mt-1">Amaldagi tariflar</p>
+    </div>
+
+    <!-- Expiring Soon -->
+    <div class="bg-[#13161B] border border-[#252A33] rounded-xl p-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-medium text-[#8A919E] uppercase tracking-wide">Muddati yaqin (7 kun)</span>
+        <div class="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+            <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+      </div>
+      <p class="text-2xl font-bold tabular-nums text-amber-400">{{ summary.memberships_expiring_soon }}</p>
+      <p class="text-xs text-[#8A919E] mt-1">Tugash arafasida</p>
+    </div>
+
+    <!-- Low Stock -->
+    <div class="bg-[#13161B] border border-[#252A33] rounded-xl p-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-medium text-[#8A919E] uppercase tracking-wide">Kam qolgan mahsulot</span>
+        <div class="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+            <path d="M2 3a1 1 0 00-1 1v1a1 1 0 001 1h16a1 1 0 001-1V4a1 1 0 00-1-1H2zM2 7.5h16l-.811 7.71a2 2 0 01-1.99 1.79H4.802a2 2 0 01-1.99-1.79L2 7.5z"/>
+          </svg>
+        </div>
+      </div>
+      <p class="text-2xl font-bold tabular-nums text-amber-400">{{ summary.low_stock_count }}</p>
+      <p class="text-xs text-[#8A919E] mt-1">Minimal chegaradan kam</p>
+    </div>
+
+  </div>
+
+  <!-- Quick Action Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+    <a href="{% url 'members:reception' %}"
+       class="bg-[#13161B] border border-[#252A33] hover:border-emerald-500/40 rounded-xl p-5 transition-colors group flex items-start gap-4">
+      <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition-transform flex-shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+          <path d="M4.5 3.75a3 3 0 00-3 3v.75h21v-.75a3 3 0 00-3-3h-15z"/>
+          <path fill-rule="evenodd" d="M22.5 9.75h-21v7.5a3 3 0 003 3h15a3 3 0 003-3v-7.5zm-18 3.75a.75.75 0 01.75-.75h6a.75.75 0 010 1.5h-6a.75.75 0 01-.75-.75zm.75 2.25a.75.75 0 000 1.5h3a.75.75 0 000-1.5h-3z" clip-rule="evenodd"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-sm font-semibold text-[#F0F2F5] group-hover:text-emerald-400 transition-colors">Qabul stoli (Reception)</h2>
+        <p class="text-xs text-[#8A919E] mt-1">A'zolarni qidirish, check-in, savdo va to'lovlarni qabul qilish</p>
+      </div>
+    </a>
+
+    <a href="{% url 'members:create' %}"
+       class="bg-[#13161B] border border-[#252A33] hover:border-emerald-500/40 rounded-xl p-5 transition-colors group flex items-start gap-4">
+      <div class="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-400 group-hover:scale-105 transition-transform flex-shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+          <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-sm font-semibold text-[#F0F2F5] group-hover:text-sky-400 transition-colors">Yangi a'zo qo'shish</h2>
+        <p class="text-xs text-[#8A919E] mt-1">Yangi sportchi profili yaratish va tizimga kiritish</p>
+      </div>
+    </a>
+
+    <a href="{% url 'billing:debtors' %}"
+       class="bg-[#13161B] border border-[#252A33] hover:border-red-500/40 rounded-xl p-5 transition-colors group flex items-start gap-4">
+      <div class="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-400 group-hover:scale-105 transition-transform flex-shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+          <path fill-rule="evenodd" d="M1 4a1 1 0 011-1h16a1 1 0 011 1v8a1 1 0 01-1 1H2a1 1 0 01-1-1V4zm12 4a3 3 0 11-6 0 3 3 0 016 0zM4 9a1 1 0 100-2 1 1 0 000 2zm13-1a1 1 0 11-2 0 1 1 0 012 0zM1.75 14.5a.75.75 0 000 1.5c4.417 0 8.693.603 12.749 1.73 1.111.309 2.251-.512 2.251-1.696v-.784a.75.75 0 00-1.5 0v.784a.272.272 0 01-.35.25A49.043 49.043 0 001.75 14.5z" clip-rule="evenodd"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-sm font-semibold text-[#F0F2F5] group-hover:text-red-400 transition-colors">Qarzdorlar ro'yxati</h2>
+        <p class="text-xs text-[#8A919E] mt-1">To'lanmagan a'zolik va mahsulot pullarini nazorat qilish</p>
+      </div>
+    </a>
+
+  </div>
+
+</div>
+{% endblock %}
