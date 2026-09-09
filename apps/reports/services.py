@@ -110,3 +110,107 @@ def dashboard_summary(as_of=None):
         "today_product_sales": ProductSale.objects.filter(created_at__date=as_of).count(),
         "low_stock_count": low_stock_products().count(),
     }
+
+
+# ─── Analytics-specific aggregation functions ─────────────────────────────────
+
+def revenue_trend(days: int = 30):
+    """Oxirgi `days` kun uchun kunlik jami hisoblangan tushum (DEBIT ledger).
+    Returns a list of {"date": date, "total": Decimal} dicts sorted ascending.
+    """
+    from django.db.models.functions import TruncDate
+
+    today = timezone.localdate()
+    start = today - datetime.timedelta(days=days - 1)
+    rows = (
+        LedgerTransaction.objects.filter(
+            direction=Direction.DEBIT,
+            created_at__date__gte=start,
+            created_at__date__lte=today,
+        )
+        .annotate(day=TruncDate("created_at"))
+        .values("day")
+        .annotate(total=Sum("amount"))
+        .order_by("day")
+    )
+    # Fill gaps so chart always has `days` data points
+    index = {row["day"]: float(row["total"] or 0) for row in rows}
+    result = []
+    for i in range(days):
+        d = start + datetime.timedelta(days=i)
+        result.append({"date": d.isoformat(), "total": index.get(d, 0)})
+    return result
+
+
+def attendance_trend(days: int = 30):
+    """Oxirgi `days` kun uchun kunlik tashriflar soni.
+    Returns a list of {"date": date_str, "count": int}.
+    """
+    today = timezone.localdate()
+    start = today - datetime.timedelta(days=days - 1)
+    rows = (
+        Attendance.objects.filter(date__gte=start, date__lte=today)
+        .values("date")
+        .annotate(count=Count("id"))
+        .order_by("date")
+    )
+    index = {row["date"]: row["count"] for row in rows}
+    result = []
+    for i in range(days):
+        d = start + datetime.timedelta(days=i)
+        result.append({"date": d.isoformat(), "count": index.get(d, 0)})
+    return result
+
+
+def membership_status_breakdown():
+    """Membership'larni holatlari bo'yicha guruhlangan sonlar.
+    Returns a list of {"status": str, "label": str, "count": int}.
+    """
+    from apps.memberships.models import MembershipStatus
+    label_map = {
+        MembershipStatus.ACTIVE: "Faol",
+        MembershipStatus.EXPIRED: "Tugagan",
+        MembershipStatus.CANCELLED: "Bekor qilingan",
+    }
+    rows = (
+        Membership.objects.values("status")
+        .annotate(count=Count("id"))
+        .order_by("status")
+    )
+    return [
+        {
+            "status": row["status"],
+            "label": label_map.get(row["status"], row["status"]),
+            "count": row["count"],
+        }
+        for row in rows
+    ]
+
+
+def payment_method_breakdown(days: int = 30):
+    """Payment'larni to'lov usuli bo'yicha guruhlangan summalar.
+    Returns a list of {"method": str, "label": str, "total": float}.
+    """
+    from apps.billing.models import PaymentMethod
+    label_map = {
+        PaymentMethod.CASH: "Naqd pul",
+        PaymentMethod.CARD: "Plastik karta",
+        PaymentMethod.TRANSFER: "Bank o'tkazmasi",
+        PaymentMethod.OTHER: "Boshqa",
+    }
+    today = timezone.localdate()
+    start = today - datetime.timedelta(days=days - 1)
+    rows = (
+        Payment.objects.filter(created_at__date__gte=start, created_at__date__lte=today)
+        .values("payment_method")
+        .annotate(total=Sum("amount"))
+        .order_by("payment_method")
+    )
+    return [
+        {
+            "method": row["payment_method"],
+            "label": label_map.get(row["payment_method"], row["payment_method"]),
+            "total": float(row["total"] or 0),
+        }
+        for row in rows
+    ]

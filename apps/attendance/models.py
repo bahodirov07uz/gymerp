@@ -18,8 +18,14 @@ class Attendance(models.Model):
         ordering = ["-date", "-check_in"]
         indexes = [models.Index(fields=["member", "date"])]
         constraints = [
-            models.UniqueConstraint(fields=["member", "date"], name="unique_attendance_per_member_per_day"),
+            # One OPEN (unchecked-out) session per member at a time.
+            # Closed sessions (check_out IS NOT NULL) are unlimited.
+            models.UniqueConstraint(
+                fields=["member"],
+                condition=models.Q(check_out__isnull=True),
+                name="unique_open_attendance_per_member",
+            ),
         ]
 
     def __str__(self):
-        return f"{self.member} - {self.date}"
+        return f"{self.member} - {self.date} {self.check_in.strftime('%H:%M')}"

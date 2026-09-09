@@ -19,14 +19,20 @@ class AlreadyCheckedIn(Exception):
 
 @transaction.atomic
 def check_in_member(*, member, created_by=None):
-    """Check a member in for "today". Requires an active membership
-    (monthly or daily); callers should create a daily membership first
-    via ``apps.memberships.services.create_daily_membership`` if the
-    member has none, then call this again."""
+    """Check a member in. Requires an active membership (monthly or daily).
+
+    A member may check in multiple times per day — each time they must
+    have checked out of the previous session first. This is enforced by
+    the DB-level partial unique constraint on (member) WHERE check_out IS NULL,
+    and by the explicit open-session guard below.
+    """
     today = timezone.localdate()
 
-    if Attendance.objects.filter(member=member, date=today).exists():
-        raise AlreadyCheckedIn(f"{member.full_name} bugun allaqachon ro'yxatga olingan.")
+    # Guard: is there an OPEN (unchecked-out) session right now?
+    if Attendance.objects.filter(member=member, check_out__isnull=True).exists():
+        raise AlreadyCheckedIn(
+            f"{member.full_name} hozir zalda — avval chiqishni belgilang."
+        )
 
     membership = get_active_membership(member, on_date=today)
     if membership is None:
@@ -38,7 +44,10 @@ def check_in_member(*, member, created_by=None):
             membership=membership, created_by=created_by,
         )
     except IntegrityError:
-        raise AlreadyCheckedIn(f"{member.full_name} bugun allaqachon ro'yxatga olingan.")
+        # Partial constraint hit (race condition) — treat as already checked in
+        raise AlreadyCheckedIn(
+            f"{member.full_name} hozir zalda — avval chiqishni belgilang."
+        )
 
     log_action(user=created_by, action="attendance_checked_in", obj=attendance, metadata={
         "member_id": member.pk,

@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics — Tahlil Markazi{% endblock %}
+
+
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Header & Days Filter -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-[#F0F2F5]">📊 Tahlil Markazi (Analytics)</h1>
+      <p class="text-xs text-[#8A919E] mt-0.5">Tushum dinamikasi, tashriflar, a'zoliklar va mahsulotlar tahlili</p>
+    </div>
+    <!-- Days filter -->
+    <div class="flex items-center gap-1 bg-[#1A1E25] border border-[#252A33] rounded-xl p-1">
+      <a href="?days=7"
+         class="px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors
+                {% if days == 7 %}bg-emerald-600 text-white{% else %}text-[#8A919E] hover:text-[#F0F2F5] hover:bg-[#252A33]{% endif %}">
+        7 kun
+      </a>
+      <a href="?days=30"
+         class="px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors
+                {% if days == 30 %}bg-emerald-600 text-white{% else %}text-[#8A919E] hover:text-[#F0F2F5] hover:bg-[#252A33]{% endif %}">
+        30 kun
+      </a>
+      <a href="?days=90"
+         class="px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors
+                {% if days == 90 %}bg-emerald-600 text-white{% else %}text-[#8A919E] hover:text-[#F0F2F5] hover:bg-[#252A33]{% endif %}">
+        90 kun
+      </a>
+    </div>
+  </div>
+
+  <!-- Chart data from view -->
+  {{ charts|json_script:"gymcrm-charts-data" }}
+
+  <!-- ROW 1: Revenue trend (line) + Attendance trend (bar) -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-5 space-y-3">
+      <div>
+        <h2 class="text-base font-semibold text-[#F0F2F5]">Kunlik tushum dinamikasi</h2>
+        <p class="text-xs text-[#8A919E]">Oxirgi {{ days }} kun uchun hisoblangan ledger tranzaksiyalari</p>
+      </div>
+      <div class="h-56 relative">
+        <canvas id="chart-revenue-trend"></canvas>
+      </div>
+    </div>
+
+    <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-5 space-y-3">
+      <div>
+        <h2 class="text-base font-semibold text-[#F0F2F5]">Kunlik tashriflar soni</h2>
+        <p class="text-xs text-[#8A919E]">Oxirgi {{ days }} kun davomida zal check-inlari</p>
+      </div>
+      <div class="h-56 relative">
+        <canvas id="chart-attendance-trend"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ROW 2: Membership status (donut) + Payment methods (donut) + Top products (pie) -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+    <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-5 space-y-3">
+      <div>
+        <h2 class="text-base font-semibold text-[#F0F2F5]">A'zoliklar holati taqsimoti</h2>
+        <p class="text-xs text-[#8A919E]">Barcha a'zolik yozuvlari bo'yicha</p>
+      </div>
+      <div class="h-48 relative">
+        <canvas id="chart-membership-status"></canvas>
+      </div>
+    </div>
+
+    <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-5 space-y-3">
+      <div>
+        <h2 class="text-base font-semibold text-[#F0F2F5]">To'lov usullari taqsimoti</h2>
+        <p class="text-xs text-[#8A919E]">Oxirgi {{ days }} kun uchun to'lovlar</p>
+      </div>
+      <div class="h-48 relative">
+        <canvas id="chart-payment-methods"></canvas>
+      </div>
+    </div>
+
+    <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-5 space-y-3">
+      <div>
+        <h2 class="text-base font-semibold text-[#F0F2F5]">Eng ko'p sotilgan mahsulotlar</h2>
+        <p class="text-xs text-[#8A919E]">Top-10, oxirgi {{ days }} kun (UZS bo'yicha)</p>
+      </div>
+      <div class="h-48 relative">
+        <canvas id="chart-top-products"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ROW 3: Low stock horizontal bar -->
+  <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-5 space-y-3">
+    <div>
+      <h2 class="text-base font-semibold text-[#F0F2F5]">⚠️ Kam qolgan mahsulotlar zaxirasi</h2>
+      <p class="text-xs text-[#8A919E]">Minimal chegara va joriy qoldiq taqqosi</p>
+    </div>
+    <div class="h-64 relative" id="low-stock-chart-container">
+      <canvas id="chart-low-stock"></canvas>
+      <div id="no-low-stock" class="hidden absolute inset-0 flex items-center justify-center">
+        <p class="text-sm text-emerald-400 font-semibold">Barcha mahsulotlar yetarli miqdorda — zaxira tanqisligi yo'q!</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+  let attempts = 0;
+  function initCharts() {
+    if (typeof Chart === 'undefined') {
+      attempts++;
+      if (attempts < 20) {
+        setTimeout(initCharts, 100);
+      } else {
+        console.error('[GymCRM] Chart.js yuklanmadi. CDN manzili bloklangan bo\'lishi mumkin.');
+      }
+      return;
+    }
+
+    const dataEl = document.getElementById('gymcrm-charts-data');
+    if (!dataEl) {
+      console.error('[GymCRM] gymcrm-charts-data elementi topilmadi.');
+      return;
+    }
+
+    let raw = {};
+    try {
+      raw = JSON.parse(dataEl.textContent);
+      if (typeof raw === 'string') {
+        raw = JSON.parse(raw);
+      }
+    } catch (err) {
+      console.error('[GymCRM] JSON parse xatosi:', err);
+      return;
+    }
+
+    // ── Rang palitrasi (FRONTEND.md ga mos) ──────────────────────────────────────
+    const PALETTE = {
+      emerald:  'rgba(52, 211, 153, 1)',
+      emeraldA: 'rgba(52, 211, 153, 0.15)',
+      red:      'rgba(248, 113, 113, 1)',
+      redA:     'rgba(248, 113, 113, 0.15)',
+      amber:    'rgba(251, 191, 36, 1)',
+      amberA:   'rgba(251, 191, 36, 0.15)',
+      sky:      'rgba(56, 189, 248, 1)',
+      skyA:     'rgba(56, 189, 248, 0.15)',
+      slate:    'rgba(148, 163, 184, 1)',
+      surface:  '#1A1E25',
+      muted:    '#8A919E',
+    };
+    const DONUT_COLORS = [PALETTE.emerald, PALETTE.red, PALETTE.amber, PALETTE.sky, PALETTE.slate];
+    const PIE_COLORS   = [PALETTE.sky, PALETTE.emerald, PALETTE.amber, PALETTE.red, PALETTE.slate];
+
+    // ── Global Chart defaults ─────────────────────────────────────────────────────
+    Chart.defaults.color = PALETTE.muted;
+    Chart.defaults.borderColor = 'rgba(37,42,51,0.8)';
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.font.size = 11;
+    Chart.defaults.plugins.legend.labels.color = PALETTE.muted;
+    Chart.defaults.plugins.legend.labels.boxWidth = 10;
+    Chart.defaults.plugins.legend.labels.padding = 14;
+
+    const gridOpts = { color: 'rgba(37,42,51,0.8)', drawBorder: false };
+    const tickOpts = { color: PALETTE.muted };
+
+    function getCanvas(id) {
+      return document.getElementById(id);
+    }
+
+    // ── 1. Revenue Trend — Line chart ─────────────────────────────────────────────
+    const revCanvas = getCanvas('chart-revenue-trend');
+    if (revCanvas && raw.revenueTrend) {
+      new Chart(revCanvas, {
+        type: 'line',
+        data: {
+          labels: raw.revenueTrend.labels || [],
+          datasets: [{
+            label: 'Tushum (UZS)',
+            data: raw.revenueTrend.data || [],
+            borderColor: PALETTE.emerald,
+            backgroundColor: PALETTE.emeraldA,
+            borderWidth: 2,
+            pointRadius: (raw.revenueTrend.labels || []).length > 30 ? 0 : 3,
+            pointHoverRadius: 5,
+            tension: 0.3,
+            fill: true,
+          }],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: gridOpts, ticks: { ...tickOpts, maxRotation: 0, maxTicksLimit: 8 } },
+            y: { grid: gridOpts, ticks: tickOpts, beginAtZero: true },
+          },
+        },
+      });
+    }
+
+    // ── 2. Attendance Trend — Bar chart ──────────────────────────────────────────
+    const attCanvas = getCanvas('chart-attendance-trend');
+    if (attCanvas && raw.attendanceTrend) {
+      new Chart(attCanvas, {
+        type: 'bar',
+        data: {
+          labels: raw.attendanceTrend.labels || [],
+          datasets: [{
+            label: 'Tashriflar',
+            data: raw.attendanceTrend.data || [],
+            backgroundColor: PALETTE.skyA,
+            borderColor: PALETTE.sky,
+            borderWidth: 1,
+            borderRadius: 4,
+          }],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: gridOpts, ticks: { ...tickOpts, maxRotation: 0, maxTicksLimit: 8 } },
+            y: { grid: gridOpts, ticks: tickOpts, beginAtZero: true },
+          },
+        },
+      });
+    }
+
+    // ── 3. Membership Status — Donut ─────────────────────────────────────────────
+    const memCanvas = getCanvas('chart-membership-status');
+    if (memCanvas && raw.membershipStatus) {
+      const memStatus = raw.membershipStatus;
+      if (memStatus.labels && memStatus.labels.length) {
+        new Chart(memCanvas, {
+          type: 'doughnut',
+          data: {
+            labels: memStatus.labels,
+            datasets: [{
+              data: memStatus.data,
+              backgroundColor: DONUT_COLORS,
+              borderColor: PALETTE.surface,
+              borderWidth: 2,
+              hoverOffset: 4,
+            }],
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: { legend: { position: 'bottom' } },
+          },
+        });
+      } else {
+        memCanvas.parentElement.innerHTML =
+          '<p class="text-center text-xs text-[#8A919E] py-10">Ma\'lumot yo\'q</p>';
+      }
+    }
+
+    // ── 4. Payment Methods — Donut ────────────────────────────────────────────────
+    const payCanvas = getCanvas('chart-payment-methods');
+    if (payCanvas && raw.paymentMethods) {
+      const payMethods = raw.paymentMethods;
+      if (payMethods.labels && payMethods.labels.length) {
+        new Chart(payCanvas, {
+          type: 'doughnut',
+          data: {
+            labels: payMethods.labels,
+            datasets: [{
+              data: payMethods.data,
+              backgroundColor: PIE_COLORS,
+              borderColor: PALETTE.surface,
+              borderWidth: 2,
+              hoverOffset: 4,
+            }],
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: { legend: { position: 'bottom' } },
+          },
+        });
+      } else {
+        payCanvas.parentElement.innerHTML =
+          '<p class="text-center text-xs text-[#8A919E] py-10">Davr uchun to\'lov yo\'q</p>';
+      }
+    }
+
+    // ── 5. Top Products — Pie chart ───────────────────────────────────────────────
+    const prodCanvas = getCanvas('chart-top-products');
+    if (prodCanvas && raw.topProducts) {
+      const topProd = raw.topProducts;
+      if (topProd.labels && topProd.labels.length) {
+        new Chart(prodCanvas, {
+          type: 'pie',
+          data: {
+            labels: topProd.labels,
+            datasets: [{
+              data: topProd.revenue,
+              backgroundColor: [...PIE_COLORS, ...DONUT_COLORS],
+              borderColor: PALETTE.surface,
+              borderWidth: 2,
+              hoverOffset: 4,
+            }],
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } },
+          },
+        });
+      } else {
+        prodCanvas.parentElement.innerHTML =
+          '<p class="text-center text-xs text-[#8A919E] py-10">Davr uchun sotuv yo\'q</p>';
+      }
+    }
+
+    // ── 6. Low Stock — Horizontal Bar ────────────────────────────────────────────
+    const lsCanvas = getCanvas('chart-low-stock');
+    if (lsCanvas && raw.lowStock) {
+      const ls = raw.lowStock;
+      if (ls.labels && ls.labels.length) {
+        new Chart(lsCanvas, {
+          type: 'bar',
+          data: {
+            labels: ls.labels,
+            datasets: [
+              {
+                label: 'Joriy qoldiq',
+                data: ls.stock,
+                backgroundColor: PALETTE.redA,
+                borderColor: PALETTE.red,
+                borderWidth: 1,
+                borderRadius: 4,
+              },
+              {
+                label: 'Minimal chegara',
+                data: ls.threshold,
+                backgroundColor: PALETTE.amberA,
+                borderColor: PALETTE.amber,
+                borderWidth: 1,
+                borderRadius: 4,
+              },
+            ],
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: { legend: { position: 'bottom' } },
+            scales: {
+              x: { grid: gridOpts, ticks: tickOpts, beginAtZero: true },
+              y: { grid: { display: false }, ticks: tickOpts },
+            },
+          },
+        });
+      } else {
+        lsCanvas.style.display = 'none';
+        const noStock = document.getElementById('no-low-stock');
+        if (noStock) noStock.classList.remove('hidden');
+      }
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCharts);
+  } else {
+    initCharts();
+  }
+})();
+</script>
+{% endblock %}

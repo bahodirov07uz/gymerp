@@ -1,6 +1,8 @@
 import datetime
+import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import render
 from django.utils import timezone
 from django.views import View
@@ -78,3 +80,64 @@ class ExpiringMembershipsView(LoginRequiredMixin, View):
             "within_7_days": memberships_expiring_within(7),
         }
         return render(request, "reports/expiring.html", ctx)
+
+
+class AnalyticsView(LoginRequiredMixin, View):
+    """Chart.js-powered analytics dashboard — trend charts, pie charts, bar charts."""
+
+    VALID_DAYS = {7, 30, 90}
+
+    def get(self, request):
+        try:
+            days = int(request.GET.get("days", 30))
+        except (ValueError, TypeError):
+            days = 30
+        if days not in self.VALID_DAYS:
+            days = 30
+
+        today = timezone.localdate()
+        start = today - datetime.timedelta(days=days - 1)
+
+        rev_trend = services.revenue_trend(days)
+        att_trend = services.attendance_trend(days)
+        mem_status = services.membership_status_breakdown()
+        pay_methods = services.payment_method_breakdown(days)
+        top_products = list(services.best_selling_products(start, today, limit=10))
+        low_stock = list(services.low_stock_products().values("name", "stock_quantity", "low_stock_threshold"))
+
+        # Serialize everything as JSON for safe embedding in the template
+        charts = {
+            "revenueTrend": {
+                "labels": [r["date"] for r in rev_trend],
+                "data": [r["total"] for r in rev_trend],
+            },
+            "attendanceTrend": {
+                "labels": [a["date"] for a in att_trend],
+                "data": [a["count"] for a in att_trend],
+            },
+            "membershipStatus": {
+                "labels": [m["label"] for m in mem_status],
+                "data": [m["count"] for m in mem_status],
+            },
+            "paymentMethods": {
+                "labels": [p["label"] for p in pay_methods],
+                "data": [p["total"] for p in pay_methods],
+            },
+            "topProducts": {
+                "labels": [p["product__name"] for p in top_products],
+                "revenue": [float(p["revenue"] or 0) for p in top_products],
+                "qty": [float(p["quantity_sold"] or 0) for p in top_products],
+            },
+            "lowStock": {
+                "labels": [p["name"] for p in low_stock],
+                "stock": [float(p["stock_quantity"]) for p in low_stock],
+                "threshold": [float(p["low_stock_threshold"]) for p in low_stock],
+            },
+        }
+
+        ctx = {
+            "days": days,
+            "charts": charts,
+        }
+        return render(request, "reports/analytics.html", ctx)
+

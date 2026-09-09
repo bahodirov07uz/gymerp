@@ -9,4 +9,5 @@ urlpatterns = [
     path("monthly/", views.MonthlyReportView.as_view(), name="monthly"),
     path("products/", views.ProductReportView.as_view(), name="products"),
     path("expiring/", views.ExpiringMembershipsView.as_view(), name="expiring"),
+    path("analytics/", views.AnalyticsView.as_view(), name="analytics"),
 ]

@@ -91,6 +91,15 @@
   </div>
 
   <!-- Flash Alerts (Errors & Receipts) -->
+  {% if checkin_error %}
+    <div class="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
+        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+      </svg>
+      <span>{{ checkin_error }}</span>
+    </div>
+  {% endif %}
+
   {% if payment_error %}
     <div class="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs flex items-center gap-2">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
@@ -118,44 +127,38 @@
     </div>
   {% endif %}
 
-  <!-- ACTION 1: Attendance / Check-In / Check-Out -->
-  <div class="bg-[#1A1E25] border border-[#252A33] rounded-xl p-4">
-    <span class="text-xs font-semibold text-[#8A919E] uppercase tracking-wide block mb-3">Davomat amali</span>
-
-    {% if today_attendance %}
-      {% if not today_attendance.check_out %}
-        <!-- Currently in Gym -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-sky-500/10 border border-sky-500/20 rounded-lg">
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
-              <span class="text-sm font-bold text-sky-400">Hozir zalda</span>
-            </div>
-            <p class="text-xs text-[#8A919E] mt-1">Kirgan vaqti: <strong class="text-[#F0F2F5]">{{ today_attendance.check_in|time:"H:i" }}</strong></p>
-          </div>
-          <form hx-post="{% url 'attendance:check_out' member.pk %}"
-                hx-target="#member-card"
-                hx-swap="innerHTML transition:true">
-            {% csrf_token %}
-            <button type="submit"
-                    class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow-lg shadow-red-600/20">
-              🚪 Chiqish (Check-Out)
-            </button>
-          </form>
-        </div>
-      {% else %}
-        <!-- Already checked out today -->
-        <div class="p-3 bg-[#13161B] border border-[#252A33] rounded-lg flex items-center justify-between">
-          <div class="text-xs text-[#8A919E]">
-            Bugun tashrif buyurgan: <span class="text-[#F0F2F5]">{{ today_attendance.check_in|time:"H:i" }}</span> — <span class="text-[#F0F2F5]">{{ today_attendance.check_out|time:"H:i" }}</span>
-          </div>
-          <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-[#1A1E25] text-[#8A919E] border border-[#252A33]">
-            Tugatilgan
-          </span>
-        </div>
+  <!-- ACTION 1: Attendance / Check-In / Check-Out (Multi-session per day support) -->
+  <div class="bg-[#1A1E25] border border-[#252A33] rounded-xl p-4 space-y-3">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-semibold text-[#8A919E] uppercase tracking-wide">Davomat amali</span>
+      {% if today_sessions %}
+        <span class="text-[11px] text-[#8A919E]">Bugun: {{ today_sessions|length }} ta sessiya</span>
       {% endif %}
+    </div>
+
+    <!-- Active Open Session Status OR New Check-In Button -->
+    {% if open_session %}
+      <!-- Currently in Gym (Open Session) -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-sky-500/10 border border-sky-500/20 rounded-lg">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
+            <span class="text-sm font-bold text-sky-400">Hozir zalda</span>
+          </div>
+          <p class="text-xs text-[#8A919E] mt-1">Kirgan vaqti: <strong class="text-[#F0F2F5]">{{ open_session.check_in|time:"H:i" }}</strong></p>
+        </div>
+        <form hx-post="{% url 'attendance:check_out' member.pk %}"
+              hx-target="#member-card"
+              hx-swap="innerHTML transition:true">
+          {% csrf_token %}
+          <button type="submit"
+                  class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow-lg shadow-red-600/20">
+            🚪 Chiqish (Check-Out)
+          </button>
+        </form>
+      </div>
     {% else %}
-      <!-- Not checked in yet -->
+      <!-- No open session: Can Check In again (even if attended earlier today) -->
       {% if active_membership %}
         <form hx-post="{% url 'attendance:check_in' member.pk %}"
               hx-target="#member-card"
@@ -181,9 +184,24 @@
         </div>
       {% endif %}
     {% endif %}
+
+    <!-- Today's all sessions log -->
+    {% if today_sessions %}
+      <div class="pt-2 border-t border-[#252A33]/80 space-y-1">
+        <span class="text-[10px] font-medium text-[#8A919E] uppercase tracking-wider block">Bugungi sessiyalar tarixi:</span>
+        <div class="flex flex-wrap gap-1.5">
+          {% for sess in today_sessions %}
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono border
+                        {% if not sess.check_out %}bg-sky-500/10 text-sky-400 border-sky-500/20{% else %}bg-[#13161B] text-[#8A919E] border-[#252A33]{% endif %}">
+              {{ sess.check_in|time:"H:i" }}–{% if sess.check_out %}{{ sess.check_out|time:"H:i" }}{% else %}<strong class="text-sky-400">hozir</strong>{% endif %}
+            </span>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
   </div>
 
-  <!-- TABS: Payment & Product Sale -->
+  <!-- TABS: Payment & Multi-Product Sale -->
   <div x-data="{ tab: 'payment' }" class="bg-[#1A1E25] border border-[#252A33] rounded-xl overflow-hidden">
     <!-- Tab Nav -->
     <div class="flex border-b border-[#252A33] bg-[#13161B]">
@@ -233,36 +251,100 @@
       </form>
     </div>
 
-    <!-- TAB 2: Product Sale Form -->
-    <div x-show="tab === 'sale'" style="display:none;" class="p-4">
+    <!-- TAB 2: Multi-Product Sale Form (Alpine.js powered) -->
+    <div x-show="tab === 'sale'" style="display:none;" class="p-4"
+         x-data="{
+           selected: {},
+           prices: {
+             {% for prod in products %}'{{ prod.pk }}': {{ prod.sale_price|floatformat:0 }},{% endfor %}
+           },
+           quantities: {
+             {% for prod in products %}'{{ prod.pk }}': 1,{% endfor %}
+           },
+           toggle(id) {
+             if (this.selected[id]) {
+               delete this.selected[id];
+             } else {
+               this.selected[id] = true;
+               if (!this.quantities[id]) this.quantities[id] = 1;
+             }
+           },
+           selectedCount() {
+             return Object.keys(this.selected).length;
+           },
+           calcTotal() {
+             let sum = 0;
+             for (const id in this.selected) {
+               const p = this.prices[id] || 0;
+               const q = parseInt(this.quantities[id], 10) || 1;
+               sum += p * q;
+             }
+             return sum;
+           },
+           formatNum(n) {
+             return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+           }
+         }">
       {% if products %}
         <form hx-post="{% url 'sales:add_product' member.pk %}"
               hx-target="#member-card"
               hx-swap="innerHTML transition:true"
               class="space-y-3">
           {% csrf_token %}
-          <div class="grid grid-cols-3 gap-2">
-            <div class="col-span-2">
-              <label class="block text-[11px] font-medium text-[#8A919E] uppercase mb-1">Mahsulot</label>
-              <select name="product_id" required
-                      class="w-full bg-[#13161B] border border-[#252A33] rounded-lg px-3 py-2 text-xs text-[#F0F2F5] focus:outline-none focus:border-emerald-500">
-                {% for prod in products %}
-                  <option value="{{ prod.pk }}" {% if prod.stock_quantity <= 0 %}disabled{% endif %}>
-                    {{ prod.name }} — {{ prod.sale_price|intcomma }} UZS (qoldiq: {{ prod.stock_quantity }})
-                  </option>
-                {% endfor %}
-              </select>
-            </div>
-            <div>
-              <label class="block text-[11px] font-medium text-[#8A919E] uppercase mb-1">Miqdor</label>
-              <input type="number" name="quantity" min="1" max="100" value="1" required
-                     class="w-full bg-[#13161B] border border-[#252A33] rounded-lg px-3 py-2 text-xs text-[#F0F2F5] focus:outline-none focus:border-emerald-500">
-            </div>
+
+          <!-- Product items list with checkboxes & quantities -->
+          <div class="max-h-56 overflow-y-auto space-y-1.5 pr-1 border border-[#252A33] rounded-lg p-2 bg-[#13161B]">
+            {% for prod in products %}
+              <div class="flex items-center justify-between gap-2 p-2 rounded-lg transition-colors"
+                   :class="selected['{{ prod.pk }}'] ? 'bg-emerald-500/10 border border-emerald-500/30' : 'bg-[#1A1E25] border border-[#252A33] hover:border-[#3b4352]'">
+                
+                <!-- Checkbox + Name -->
+                <label class="flex items-center gap-2 min-w-0 flex-1 cursor-pointer select-none">
+                  <input type="checkbox"
+                         name="selected_products"
+                         value="{{ prod.pk }}"
+                         @change="toggle('{{ prod.pk }}')"
+                         :checked="!!selected['{{ prod.pk }}']"
+                         {% if prod.stock_quantity <= 0 %}disabled{% endif %}
+                         class="rounded bg-[#13161B] border-[#252A33] text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0">
+                  <div class="min-w-0">
+                    <p class="text-xs font-semibold text-[#F0F2F5] truncate">{{ prod.name }}</p>
+                    <p class="text-[10px] text-[#8A919E]">
+                      {{ prod.sale_price|intcomma }} UZS
+                      • Qoldiq: <span class="{% if prod.is_low_stock %}text-amber-400 font-bold{% else %}text-[#8A919E]{% endif %}">{{ prod.stock_quantity }} {{ prod.unit }}</span>
+                    </p>
+                  </div>
+                </label>
+
+                <!-- Quantity input -->
+                <div class="flex items-center gap-1 flex-shrink-0" x-show="selected['{{ prod.pk }}']" x-transition>
+                  <label class="text-[10px] text-[#8A919E]">Soni:</label>
+                  <input type="number"
+                         name="quantity_{{ prod.pk }}"
+                         min="1"
+                         max="{{ prod.stock_quantity }}"
+                         x-model="quantities['{{ prod.pk }}']"
+                         class="w-14 bg-[#13161B] border border-[#252A33] rounded px-1.5 py-1 text-xs text-[#F0F2F5] text-center focus:outline-none focus:border-emerald-500">
+                </div>
+              </div>
+            {% endfor %}
           </div>
-          <button type="submit"
-                  class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5">
-            🛒 Hisobga qo'shish (Sotish)
-          </button>
+
+          <!-- Bottom summary & submit -->
+          <div class="flex items-center justify-between pt-1">
+            <div class="text-xs text-[#8A919E]">
+              Tanlangan: <strong class="text-[#F0F2F5]" x-text="selectedCount()">0</strong> ta
+              <template x-if="selectedCount() > 0">
+                <span> • Jami: <strong class="text-emerald-400 tabular-nums" x-text="formatNum(calcTotal()) + ' UZS'"></strong></span>
+              </template>
+            </div>
+            <button type="submit"
+                    :disabled="selectedCount() === 0"
+                    :class="selectedCount() > 0 ? 'bg-sky-600 hover:bg-sky-500 text-white cursor-pointer shadow-lg shadow-sky-600/20' : 'bg-[#252A33] text-[#8A919E] cursor-not-allowed'"
+                    class="px-4 py-2 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5">
+              🛒 Hisobga qo'shish (<span x-text="selectedCount()">0</span>)
+            </button>
+          </div>
         </form>
       {% else %}
         <p class="text-xs text-[#8A919E] text-center py-2">Faol mahsulotlar mavjud emas</p>

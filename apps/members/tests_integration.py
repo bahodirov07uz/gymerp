@@ -1,4 +1,4 @@
-﻿from decimal import Decimal
+from decimal import Decimal
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils import timezone
@@ -68,6 +68,9 @@ class FullGymIntegrationTests(TestCase):
             reverse("reports:monthly") + "?month=bad-month",  # tests bad month resilience
             reverse("reports:products"),
             reverse("reports:expiring"),
+            reverse("reports:analytics"),
+            reverse("reports:analytics") + "?days=7",
+            reverse("reports:analytics") + "?days=90",
         ]
         for url in urls:
             with self.subTest(url=url):
@@ -82,36 +85,56 @@ class FullGymIntegrationTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Jasur Toshmatov")
 
-        # 2. Add Daily Plan & Check-In
+        # 2. Add Daily Plan & Check-In (Check that OOB in-gym is returned)
         resp = self.client.post(reverse("attendance:add_daily_plan", args=[self.member.pk]))
         self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'hx-swap-oob="true"')
         self.assertEqual(calculate_member_balance(self.member), Decimal("30000.00"))
         self.assertTrue(Attendance.objects.filter(member=self.member, check_out__isnull=True).exists())
 
-        # 3. Add Product Sale
+        # 3. Add Product Sale (Multi-product selection)
+        product2 = Product.objects.create(
+            name="Protein Bar",
+            sku="BAR-001",
+            unit="dona",
+            sale_price=Decimal("15000.00"),
+            cost_price=Decimal("10000.00"),
+            stock_quantity=Decimal("30"),
+            low_stock_threshold=Decimal("5"),
+        )
         resp = self.client.post(reverse("sales:add_product", args=[self.member.pk]), {
-            "product_id": self.product.pk,
-            "quantity": "2",
+            "selected_products": [str(self.product.pk), str(product2.pk)],
+            f"quantity_{self.product.pk}": "2",
+            f"quantity_{product2.pk}": "3",
         })
         self.assertEqual(resp.status_code, 200)
-        # Total debt: 30000 (daily) + 50000 (2 x 25000) = 80000
-        self.assertEqual(calculate_member_balance(self.member), Decimal("80000.00"))
+        # Total debt: 30000 (daily) + 50000 (2 x 25000) + 45000 (3 x 15000) = 125000
+        self.assertEqual(calculate_member_balance(self.member), Decimal("125000.00"))
         self.product.refresh_from_db()
+        product2.refresh_from_db()
         self.assertEqual(self.product.stock_quantity, Decimal("48"))
+        self.assertEqual(product2.stock_quantity, Decimal("27"))
 
         # 4. Receive Payment (String amount tested)
         resp = self.client.post(reverse("billing:receive_payment", args=[self.member.pk]), {
-            "amount": "80000",
+            "amount": "125000",
             "payment_method": PaymentMethod.CASH,
         })
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(calculate_member_balance(self.member), Decimal("0.00"))
 
-        # 5. Check-Out
+        # 5. Check-Out (Check OOB in-gym returned)
         resp = self.client.post(reverse("attendance:check_out", args=[self.member.pk]))
         self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'hx-swap-oob="true"')
         att = Attendance.objects.get(member=self.member)
         self.assertIsNotNone(att.check_out)
+
+        # 6. Check-In AGAIN on the same day (should succeed because previous was checked out)
+        create_membership(member=self.member, plan=self.monthly_plan)
+        resp = self.client.post(reverse("attendance:check_in", args=[self.member.pk]))
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(Attendance.objects.filter(member=self.member).count(), 2)
 
     def test_debtors_queryset_accuracy(self):
         # Create debt for member
@@ -130,3 +153,4 @@ class FullGymIntegrationTests(TestCase):
         self.assertEqual(resp.status_code, 302)
         self.product.refresh_from_db()
         self.assertEqual(self.product.stock_quantity, Decimal("75"))
+
