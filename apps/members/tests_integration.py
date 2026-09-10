@@ -154,3 +154,76 @@ class FullGymIntegrationTests(TestCase):
         self.product.refresh_from_db()
         self.assertEqual(self.product.stock_quantity, Decimal("75"))
 
+
+class MemberProfileActionsTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.manager = User.objects.create_user(
+            username="manager2", password="password123", role=Role.MANAGER,
+        )
+        self.receptionist = User.objects.create_user(
+            username="reception2", password="password123", role=Role.RECEPTIONIST,
+        )
+        self.member = Member.objects.create(
+            member_code="M-000009",
+            first_name="Anvar",
+            last_name="Saidov",
+            phone="+998939998877",
+        )
+        self.monthly_plan = MembershipPlan.objects.create(
+            name="Oylik Standart",
+            plan_type=PlanType.MONTHLY,
+            price=Decimal("400000.00"),
+            duration_days=30,
+        )
+
+    def test_add_membership_from_profile_increases_balance(self):
+        self.client.login(username="reception2", password="password123")
+        resp = self.client.post(
+            reverse("members:add_membership", args=[self.member.pk]),
+            {"plan_id": self.monthly_plan.pk, "start_date": ""},
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(calculate_member_balance(self.member), Decimal("400000.00"))
+        self.assertEqual(self.member.memberships.count(), 1)
+        self.assertContains(resp, "Oylik Standart")
+
+    def test_add_payment_from_profile_decreases_balance(self):
+        # 1. Create initial membership debt
+        create_membership(member=self.member, plan=self.monthly_plan)
+        self.assertEqual(calculate_member_balance(self.member), Decimal("400000.00"))
+
+        # 2. Add payment from profile
+        self.client.login(username="reception2", password="password123")
+        resp = self.client.post(
+            reverse("members:add_payment", args=[self.member.pk]),
+            {"amount": "150000", "payment_method": "CASH", "note": "Kassaga to'lov"},
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(calculate_member_balance(self.member), Decimal("250000.00"))
+        self.assertEqual(self.member.payments.count(), 1)
+
+    def test_add_manual_charge_by_manager_succeeds(self):
+        self.client.login(username="manager2", password="password123")
+        resp = self.client.post(
+            reverse("members:add_manual_charge", args=[self.member.pk]),
+            {"amount": "50000", "description": "Shkaf ijarasi"},
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(calculate_member_balance(self.member), Decimal("50000.00"))
+        self.assertContains(resp, "Shkaf ijarasi")
+
+    def test_add_manual_charge_by_receptionist_forbidden(self):
+        self.client.login(username="reception2", password="password123")
+        resp = self.client.post(
+            reverse("members:add_manual_charge", args=[self.member.pk]),
+            {"amount": "50000", "description": "Ruxsatsiz urinish"},
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(calculate_member_balance(self.member), Decimal("0.00"))
+
+

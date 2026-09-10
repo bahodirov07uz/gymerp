@@ -1,41 +1,57 @@
-﻿{% load humanize %}
+{% load humanize %}
 
-<div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-5 shadow-xl shadow-black/20 space-y-5"
-     id="active-member-container"
-     hx-target="this"
-     hx-swap="outerHTML">
+<!-- Mobile close bar (only visible below md breakpoint) -->
+<div class="md:hidden flex items-center justify-between px-4 pt-3 pb-2 border-b border-[#252A33] w-full max-w-full bg-[#13161B]"
+     x-data
+     x-on:click="$dispatch('close-member-modal')">
+  <div class="w-10 h-1 bg-[#252A33] rounded-full mx-auto absolute left-1/2 -translate-x-1/2 top-2"></div>
+  <span class="text-sm font-semibold text-[#F0F2F5]">A'zo kartasi</span>
+  <button type="button"
+          class="p-1.5 rounded-lg text-[#8A919E] hover:text-[#F0F2F5] hover:bg-[#1A1E25] transition-colors"
+          aria-label="Yopish">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+      <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/>
+    </svg>
+  </button>
+</div>
+
+<div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-4 sm:p-5 shadow-xl shadow-black/20 space-y-4 sm:space-y-5
+            md:rounded-2xl rounded-none border-t-0 md:border-t w-full max-w-full overflow-x-hidden"
+     id="active-member-container">
 
   <!-- Header: Name, Code & Status -->
-  <div class="flex items-start justify-between gap-3 border-b border-[#252A33] pb-4">
-    <div>
-      <div class="flex items-center gap-2">
-        <h2 class="text-xl font-bold text-[#F0F2F5]">{{ member.full_name }}</h2>
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-[#252A33] pb-4 w-full">
+    <div class="min-w-0 flex-1">
+      <div class="flex items-center gap-2 flex-wrap">
+        <h2 class="text-lg sm:text-xl font-bold text-[#F0F2F5] truncate max-w-full">{{ member.full_name }}</h2>
         {% if member.is_active %}
-          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex-shrink-0">
             Faol
           </span>
         {% else %}
-          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20">
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20 flex-shrink-0">
             Nofaol
           </span>
         {% endif %}
       </div>
-      <div class="flex flex-wrap items-center gap-3 text-xs text-[#8A919E] mt-1">
-        <span class="font-mono text-[#F0F2F5] bg-[#1A1E25] px-2 py-0.5 rounded border border-[#252A33]">{{ member.member_code }}</span>
-        <span>📞 {{ member.phone }}</span>
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-[#8A919E] mt-1">
+        <span class="font-mono text-[#F0F2F5] bg-[#1A1E25] px-2 py-0.5 rounded border border-[#252A33] flex-shrink-0">{{ member.member_code }}</span>
+        <span class="truncate">📞 {{ member.phone }}</span>
         {% if member.gender %}
-          <span>{{ member.get_gender_display }}</span>
+          <span class="flex-shrink-0">{{ member.get_gender_display }}</span>
         {% endif %}
       </div>
     </div>
 
-    <a href="{% url 'members:profile' member.pk %}"
-       class="inline-flex items-center gap-1 px-3 py-1.5 bg-[#1A1E25] hover:bg-[#252A33] border border-[#252A33] text-[#F0F2F5] text-xs font-medium rounded-lg transition-colors flex-shrink-0">
-      To'liq profil
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
-        <path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd"/>
-      </svg>
-    </a>
+    <div class="flex-shrink-0">
+      <a href="{% url 'members:profile' member.pk %}"
+         class="inline-flex items-center gap-1 px-3 py-1.5 bg-[#1A1E25] hover:bg-[#252A33] border border-[#252A33] text-[#F0F2F5] text-xs font-medium rounded-lg transition-colors">
+        To'liq profil
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
+          <path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd"/>
+        </svg>
+      </a>
+    </div>
   </div>
 
   <!-- Status & Financial Summary Grid -->
@@ -207,12 +223,12 @@
     <div class="flex border-b border-[#252A33] bg-[#13161B]">
       <button @click="tab = 'payment'"
               :class="tab === 'payment' ? 'border-b-2 border-emerald-500 text-emerald-400 font-semibold' : 'text-[#8A919E] hover:text-[#F0F2F5]'"
-              class="flex-1 py-2.5 px-4 text-xs text-center transition-colors flex items-center justify-center gap-1.5">
+              class="flex-1 py-2.5 px-2 sm:px-4 text-xs text-center transition-colors flex items-center justify-center gap-1.5 truncate">
         💳 To'lov qabul qilish
       </button>
       <button @click="tab = 'sale'"
               :class="tab === 'sale' ? 'border-b-2 border-emerald-500 text-emerald-400 font-semibold' : 'text-[#8A919E] hover:text-[#F0F2F5]'"
-              class="flex-1 py-2.5 px-4 text-xs text-center transition-colors flex items-center justify-center gap-1.5">
+              class="flex-1 py-2.5 px-2 sm:px-4 text-xs text-center transition-colors flex items-center justify-center gap-1.5 truncate">
         🛒 Mahsulot sotish
       </button>
     </div>
@@ -251,33 +267,35 @@
       </form>
     </div>
 
-    <!-- TAB 2: Multi-Product Sale Form (Alpine.js powered) -->
-    <div x-show="tab === 'sale'" style="display:none;" class="p-4"
+    <!-- TAB 2: Multi-Product Sale Form (Search-based, Alpine.js powered) -->
+    <div x-show="tab === 'sale'" style="display:none;" class="p-4 space-y-3"
          x-data="{
-           selected: {},
-           prices: {
-             {% for prod in products %}'{{ prod.pk }}': {{ prod.sale_price|floatformat:0 }},{% endfor %}
-           },
-           quantities: {
-             {% for prod in products %}'{{ prod.pk }}': 1,{% endfor %}
-           },
-           toggle(id) {
-             if (this.selected[id]) {
-               delete this.selected[id];
+           selectedProducts: {},
+           toggleProduct(prod) {
+             if (this.selectedProducts[prod.id]) {
+               delete this.selectedProducts[prod.id];
              } else {
-               this.selected[id] = true;
-               if (!this.quantities[id]) this.quantities[id] = 1;
+               this.selectedProducts[prod.id] = {
+                 id: prod.id,
+                 name: prod.name,
+                 price: prod.price,
+                 quantity: 1,
+                 max_stock: prod.max_stock,
+                 unit: prod.unit
+               };
              }
            },
+           removeProduct(id) {
+             delete this.selectedProducts[id];
+           },
            selectedCount() {
-             return Object.keys(this.selected).length;
+             return Object.keys(this.selectedProducts).length;
            },
            calcTotal() {
              let sum = 0;
-             for (const id in this.selected) {
-               const p = this.prices[id] || 0;
-               const q = parseInt(this.quantities[id], 10) || 1;
-               sum += p * q;
+             for (const id in this.selectedProducts) {
+               const p = this.selectedProducts[id];
+               sum += (p.price || 0) * (parseInt(p.quantity, 10) || 1);
              }
              return sum;
            },
@@ -285,70 +303,132 @@
              return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
            }
          }">
-      {% if products %}
-        <form hx-post="{% url 'sales:add_product' member.pk %}"
-              hx-target="#member-card"
-              hx-swap="innerHTML transition:true"
-              class="space-y-3">
-          {% csrf_token %}
 
-          <!-- Product items list with checkboxes & quantities -->
-          <div class="max-h-56 overflow-y-auto space-y-1.5 pr-1 border border-[#252A33] rounded-lg p-2 bg-[#13161B]">
-            {% for prod in products %}
-              <div class="flex items-center justify-between gap-2 p-2 rounded-lg transition-colors"
-                   :class="selected['{{ prod.pk }}'] ? 'bg-emerald-500/10 border border-emerald-500/30' : 'bg-[#1A1E25] border border-[#252A33] hover:border-[#3b4352]'">
-                
-                <!-- Checkbox + Name -->
-                <label class="flex items-center gap-2 min-w-0 flex-1 cursor-pointer select-none">
-                  <input type="checkbox"
-                         name="selected_products"
-                         value="{{ prod.pk }}"
-                         @change="toggle('{{ prod.pk }}')"
-                         :checked="!!selected['{{ prod.pk }}']"
-                         {% if prod.stock_quantity <= 0 %}disabled{% endif %}
-                         class="rounded bg-[#13161B] border-[#252A33] text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0">
-                  <div class="min-w-0">
-                    <p class="text-xs font-semibold text-[#F0F2F5] truncate">{{ prod.name }}</p>
-                    <p class="text-[10px] text-[#8A919E]">
-                      {{ prod.sale_price|intcomma }} UZS
-                      • Qoldiq: <span class="{% if prod.is_low_stock %}text-amber-400 font-bold{% else %}text-[#8A919E]{% endif %}">{{ prod.stock_quantity }} {{ prod.unit }}</span>
-                    </p>
-                  </div>
-                </label>
+      <!-- Search Input Box -->
+      <div class="relative">
+        <input type="text"
+               name="q"
+               placeholder="Mahsulot nomini yozing..."
+               autocomplete="off"
+               hx-get="{% url 'sales:product_search' member.pk %}"
+               hx-trigger="keyup changed delay:250ms, focus"
+               hx-target="#product-search-results"
+               hx-indicator="#product-search-spinner"
+               class="w-full bg-[#13161B] border border-[#252A33] rounded-xl pl-10 pr-10 py-2.5 text-base sm:text-sm text-[#F0F2F5] placeholder-[#8A919E] focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-all">
 
-                <!-- Quantity input -->
-                <div class="flex items-center gap-1 flex-shrink-0" x-show="selected['{{ prod.pk }}']" x-transition>
-                  <label class="text-[10px] text-[#8A919E]">Soni:</label>
-                  <input type="number"
-                         name="quantity_{{ prod.pk }}"
-                         min="1"
-                         max="{{ prod.stock_quantity }}"
-                         x-model="quantities['{{ prod.pk }}']"
-                         class="w-14 bg-[#13161B] border border-[#252A33] rounded px-1.5 py-1 text-xs text-[#F0F2F5] text-center focus:outline-none focus:border-emerald-500">
-                </div>
-              </div>
-            {% endfor %}
-          </div>
+        <!-- Search icon -->
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#8A919E]">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+            <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/>
+          </svg>
+        </div>
 
-          <!-- Bottom summary & submit -->
-          <div class="flex items-center justify-between pt-1">
-            <div class="text-xs text-[#8A919E]">
-              Tanlangan: <strong class="text-[#F0F2F5]" x-text="selectedCount()">0</strong> ta
-              <template x-if="selectedCount() > 0">
-                <span> • Jami: <strong class="text-emerald-400 tabular-nums" x-text="formatNum(calcTotal()) + ' UZS'"></strong></span>
-              </template>
-            </div>
-            <button type="submit"
-                    :disabled="selectedCount() === 0"
-                    :class="selectedCount() > 0 ? 'bg-sky-600 hover:bg-sky-500 text-white cursor-pointer shadow-lg shadow-sky-600/20' : 'bg-[#252A33] text-[#8A919E] cursor-not-allowed'"
-                    class="px-4 py-2 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5">
-              🛒 Hisobga qo'shish (<span x-text="selectedCount()">0</span>)
+        <!-- Spinner -->
+        <div id="product-search-spinner" class="htmx-indicator absolute inset-y-0 right-0 pr-3 flex items-center">
+          <svg class="animate-spin h-4 w-4 text-emerald-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+        </div>
+      </div>
+
+      <!-- HTMX Search Results Container -->
+      <div id="product-search-results">
+        <div class="text-center py-6 px-4 bg-[#13161B] border border-[#252A33] rounded-xl">
+          <p class="text-xs font-medium text-[#8A919E]">Mahsulot nomini yozing...</p>
+          <p class="text-[11px] text-[#8A919E]/60 mt-0.5">Kamida 2 ta harf kiriting (masalan: suv, protein)</p>
+        </div>
+      </div>
+
+      <!-- Selected Products Section (Always visible, independent of HTMX search results) -->
+      <div class="space-y-2 pt-2 border-t border-[#252A33]">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-[#8A919E] uppercase tracking-wide">
+            Tanlangan mahsulotlar (<span x-text="selectedCount()">0</span>)
+          </span>
+          <template x-if="selectedCount() > 0">
+            <button type="button" @click="selectedProducts = {}" class="text-[11px] text-[#8A919E] hover:text-red-400 transition-colors">
+              Hammasini tozalash
             </button>
+          </template>
+        </div>
+
+        <!-- Empty state when no products selected -->
+        <div x-show="selectedCount() === 0" class="py-4 px-3 bg-[#13161B] border border-[#252A33] rounded-xl text-center text-xs text-[#8A919E]">
+          Hozircha mahsulot tanlanmagan. Yuqoridagi qidiruv orqali tanlang.
+        </div>
+
+        <!-- Selected products list -->
+        <div x-show="selectedCount() > 0" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+          <template x-for="item in Object.values(selectedProducts)" :key="item.id">
+            <div class="flex items-center justify-between gap-2 p-2.5 bg-[#13161B] border border-[#252A33] rounded-xl min-h-[44px]">
+              <!-- Product info -->
+              <div class="min-w-0 flex-1">
+                <p class="text-xs font-semibold text-[#F0F2F5] truncate" x-text="item.name"></p>
+                <p class="text-[10px] text-[#8A919E]">
+                  <span x-text="formatNum(item.price) + ' UZS'"></span>
+                  <span x-show="item.unit" x-text="' / ' + item.unit"></span>
+                </p>
+              </div>
+
+              <!-- Quantity input (min 44px touch area) -->
+              <div class="flex items-center gap-1.5 flex-shrink-0">
+                <label class="text-[10px] text-[#8A919E]">Soni:</label>
+                <input type="number"
+                       min="1"
+                       :max="item.max_stock"
+                       x-model.number="item.quantity"
+                       @input="if(item.quantity < 1) item.quantity = 1; if(item.max_stock && item.quantity > item.max_stock) item.quantity = item.max_stock;"
+                       class="w-16 h-10 sm:h-8 bg-[#1A1E25] border border-[#252A33] rounded-lg px-2 text-xs text-[#F0F2F5] text-center focus:outline-none focus:border-emerald-500">
+              </div>
+
+              <!-- Remove button -->
+              <button type="button"
+                      @click="removeProduct(item.id)"
+                      class="p-2 sm:p-1 text-[#8A919E] hover:text-red-400 transition-colors flex-shrink-0"
+                      title="Olib tashlash">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                  <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/>
+                </svg>
+              </button>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- Submission Form -->
+      <form hx-post="{% url 'sales:add_product' member.pk %}"
+            hx-target="#member-card"
+            hx-swap="innerHTML transition:true"
+            class="space-y-3 pt-1">
+        {% csrf_token %}
+
+        <!-- Dynamic hidden inputs driven by Alpine -->
+        <template x-for="item in Object.values(selectedProducts)" :key="item.id">
+          <div>
+            <input type="hidden" name="selected_products" :value="item.id">
+            <input type="hidden" name="product_id" :value="item.id">
+            <input type="hidden" :name="'quantity_' + item.id" :value="item.quantity">
           </div>
-        </form>
-      {% else %}
-        <p class="text-xs text-[#8A919E] text-center py-2">Faol mahsulotlar mavjud emas</p>
-      {% endif %}
+        </template>
+
+        <!-- Bottom summary & submit -->
+        <div class="flex items-center justify-between pt-1">
+          <div class="text-xs text-[#8A919E]">
+            Tanlangan: <strong class="text-[#F0F2F5]" x-text="selectedCount()">0</strong> ta
+            <template x-if="selectedCount() > 0">
+              <span> • Jami: <strong class="text-emerald-400 tabular-nums" x-text="formatNum(calcTotal()) + ' UZS'"></strong></span>
+            </template>
+          </div>
+          <button type="submit"
+                  :disabled="selectedCount() === 0"
+                  :class="selectedCount() > 0 ? 'bg-sky-600 hover:bg-sky-500 text-white cursor-pointer shadow-lg shadow-sky-600/20' : 'bg-[#252A33] text-[#8A919E] cursor-not-allowed'"
+                  class="px-4 py-2.5 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 min-h-[44px]">
+            🛒 Hisobga qo'shish (<span x-text="selectedCount()">0</span>)
+          </button>
+        </div>
+      </form>
+
     </div>
 
   </div>

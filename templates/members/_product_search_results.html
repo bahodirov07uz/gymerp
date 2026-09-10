@@ -1,0 +1,68 @@
+{% load humanize %}
+<div class="space-y-1.5">
+  {% if products %}
+    <div class="text-[11px] font-medium text-[#8A919E] uppercase tracking-wide px-1 pb-1 flex justify-between items-center">
+      <span>Natijalar ({{ products|length }})</span>
+      <span class="text-[10px] text-[#8A919E]/70">Tanlash uchun bosing</span>
+    </div>
+    <div class="max-h-60 overflow-y-auto space-y-1.5 pr-1">
+      {% for prod in products %}
+        <div class="rounded-xl border transition-colors select-none"
+             :class="selectedProducts['{{ prod.pk }}'] ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-[#1A1E25] border-[#252A33] hover:border-[#3b4352]'">
+          <label class="flex items-center justify-between gap-3 p-2.5 min-h-[44px] cursor-pointer w-full">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              <input type="checkbox"
+                     value="{{ prod.pk }}"
+                     @change="toggleProduct({ id: '{{ prod.pk }}', name: '{{ prod.name|escapejs }}', price: {{ prod.sale_price|floatformat:0 }}, max_stock: {{ prod.stock_quantity|floatformat:0 }}, unit: '{{ prod.unit|escapejs }}' })"
+                     :checked="!!selectedProducts['{{ prod.pk }}']"
+                     {% if prod.stock_quantity <= 0 %}disabled{% endif %}
+                     class="w-4 h-4 rounded bg-[#13161B] border-[#252A33] text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0 flex-shrink-0">
+              <div class="min-w-0 flex-1">
+                <p class="text-xs font-semibold text-[#F0F2F5] truncate">{{ prod.name }}</p>
+                <p class="text-[11px] text-[#8A919E] mt-0.5">
+                  <span class="text-[#F0F2F5] font-medium">{{ prod.sale_price|intcomma }} UZS</span>
+                  • Qoldiq:
+                  {% if prod.stock_quantity <= 0 %}
+                    <span class="text-red-400 font-semibold">Tugagan</span>
+                  {% elif prod.is_low_stock %}
+                    <span class="text-amber-400 font-semibold">{{ prod.stock_quantity|floatformat:0 }} {{ prod.unit }}</span>
+                  {% else %}
+                    <span>{{ prod.stock_quantity|floatformat:0 }} {{ prod.unit }}</span>
+                  {% endif %}
+                </p>
+              </div>
+            </div>
+            <div class="flex-shrink-0 text-right">
+              <template x-if="selectedProducts['{{ prod.pk }}']">
+                <span class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
+                    <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/>
+                  </svg>
+                  Tanlandi
+                </span>
+              </template>
+              <template x-if="!selectedProducts['{{ prod.pk }}'] && {{ prod.stock_quantity }} > 0">
+                <span class="text-xs text-[#8A919E] hover:text-[#F0F2F5] transition-colors">+ Qo'shish</span>
+              </template>
+            </div>
+          </label>
+        </div>
+      {% endfor %}
+    </div>
+  {% elif too_short %}
+    <div class="text-center py-6 px-4 bg-[#13161B] border border-[#252A33] rounded-xl">
+      <p class="text-xs font-medium text-amber-400">Yana harf yozing...</p>
+      <p class="text-[11px] text-[#8A919E]/60 mt-0.5">Qidirish uchun kamida 2 ta harf kiriting</p>
+    </div>
+  {% elif query and searched %}
+    <div class="text-center py-6 px-4 bg-[#13161B] border border-[#252A33] rounded-xl">
+      <p class="text-xs font-medium text-[#8A919E]">"{{ query }}" bo'yicha mahsulot topilmadi</p>
+      <p class="text-[11px] text-[#8A919E]/60 mt-0.5">Boshqa nom bilan qidirib ko'ring</p>
+    </div>
+  {% else %}
+    <div class="text-center py-6 px-4 bg-[#13161B] border border-[#252A33] rounded-xl">
+      <p class="text-xs font-medium text-[#8A919E]">Mahsulot nomini yozing...</p>
+      <p class="text-[11px] text-[#8A919E]/60 mt-0.5">Kamida 2 ta harf kiriting (masalan: suv, protein)</p>
+    </div>
+  {% endif %}
+</div>

@@ -62,6 +62,32 @@ class MemberCreateView(LoginRequiredMixin, CreateView):
         return reverse("members:profile", args=[self.object.pk])
 
 
+from decimal import Decimal, InvalidOperation
+from django.utils import timezone
+from django.views import View
+
+from apps.accounts.permissions import ManagerRequiredMixin
+from apps.billing.models import TransactionType
+from apps.billing.services import create_payment, post_charge
+from apps.memberships.models import MembershipPlan, PlanType
+from apps.memberships.services import create_daily_membership, create_membership
+
+
+def get_member_profile_context(member):
+    """Unified context generator for member profile and its HTMX partials."""
+    return {
+        "member": member,
+        "active_membership": get_active_membership(member),
+        "memberships": member.memberships.select_related("plan").order_by("-start_date")[:20],
+        "attendances": member.attendances.order_by("-date")[:20],
+        "product_sales": member.product_sales.prefetch_related("items__product").order_by("-created_at")[:20],
+        "payments": member.payments.order_by("-created_at")[:20],
+        "ledger": member.ledger_entries.select_related("created_by").order_by("-created_at")[:50],
+        "balance": calculate_member_balance(member),
+        "plans": MembershipPlan.objects.filter(is_active=True).order_by("name"),
+    }
+
+
 class MemberProfileView(LoginRequiredMixin, DetailView):
     """Full financial + activity profile: memberships, attendance,
     purchases, payments, outstanding balance, and complete ledger."""
@@ -72,14 +98,7 @@ class MemberProfileView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        member = self.object
-        ctx["active_membership"] = get_active_membership(member)
-        ctx["memberships"] = member.memberships.select_related("plan").order_by("-start_date")[:20]
-        ctx["attendances"] = member.attendances.order_by("-date")[:20]
-        ctx["product_sales"] = member.product_sales.prefetch_related("items__product").order_by("-created_at")[:20]
-        ctx["payments"] = member.payments.order_by("-created_at")[:20]
-        ctx["ledger"] = member.ledger_entries.select_related("created_by").order_by("-created_at")[:50]
-        ctx["balance"] = calculate_member_balance(member)
+        ctx.update(get_member_profile_context(self.object))
         return ctx
 
     def render_to_response(self, context, **kwargs):
@@ -93,6 +112,127 @@ class MemberProfileView(LoginRequiredMixin, DetailView):
             card_ctx["products"] = Product.objects.filter(is_active=True).order_by("name")
             return render(self.request, "members/_member_card.html", card_ctx)
         return super().render_to_response(context, **kwargs)
+
+
+class AddMembershipFromProfileView(LoginRequiredMixin, View):
+    """Creates a monthly or daily membership directly from the profile page."""
+
+    def post(self, request, pk):
+        member = get_object_or_404(Member, pk=pk)
+        plan_id = request.POST.get("plan_id")
+        start_date_raw = request.POST.get("start_date", "").strip()
+        error = None
+        success = None
+
+        if not plan_id:
+            error = "Iltimos, a'zolik rejasini tanlang."
+        else:
+            plan = get_object_or_404(MembershipPlan, pk=plan_id, is_active=True)
+            if start_date_raw:
+                try:
+                    start_date = timezone.datetime.strptime(start_date_raw, "%Y-%m-%d").date()
+                except ValueError:
+                    start_date = timezone.localdate()
+            else:
+                start_date = timezone.localdate()
+
+            try:
+                if plan.plan_type == PlanType.DAILY:
+                    create_daily_membership(member=member, plan=plan, day=start_date, created_by=request.user)
+                else:
+                    create_membership(member=member, plan=plan, start_date=start_date, created_by=request.user)
+                success = f"{plan.name} muvaffaqiyatli qo'shildi."
+            except Exception as exc:
+                error = str(exc)
+
+        ctx = get_member_profile_context(member)
+        ctx["membership_error"] = error
+        ctx["membership_success"] = success
+
+        if request.headers.get("HX-Request"):
+            return render(request, "members/_profile_summary.html", ctx)
+        return redirect("members:profile", pk=member.pk)
+
+
+class AddPaymentFromProfileView(LoginRequiredMixin, View):
+    """Records a payment directly from the profile page."""
+
+    def post(self, request, pk):
+        member = get_object_or_404(Member, pk=pk)
+        amount_raw = request.POST.get("amount", "").strip()
+        payment_method = request.POST.get("payment_method", "CASH").strip()
+        note = request.POST.get("note", "").strip()
+        error = None
+        success = None
+
+        try:
+            amount = Decimal(amount_raw)
+            if amount <= 0:
+                raise ValueError("Summa musbat bo'lishi kerak.")
+        except (InvalidOperation, ValueError, TypeError):
+            error = "To'g'ri to'lov summasini kiriting (masalan: 100000)."
+
+        if not error:
+            try:
+                create_payment(
+                    member=member,
+                    amount=amount,
+                    payment_method=payment_method,
+                    note=note or "Profil orqali to'lov",
+                    created_by=request.user,
+                )
+                success = f"{amount:,.0f} UZS to'lov qabul qilindi."
+            except Exception as exc:
+                error = str(exc)
+
+        ctx = get_member_profile_context(member)
+        ctx["payment_error"] = error
+        ctx["payment_success"] = success
+
+        if request.headers.get("HX-Request"):
+            return render(request, "members/_profile_summary.html", ctx)
+        return redirect("members:profile", pk=member.pk)
+
+
+class AddManualChargeFromProfileView(ManagerRequiredMixin, View):
+    """Records a manual debt/charge directly from the profile page.
+    Strictly restricted to OWNER/MANAGER roles.
+    """
+
+    def post(self, request, pk):
+        member = get_object_or_404(Member, pk=pk)
+        amount_raw = request.POST.get("amount", "").strip()
+        description = request.POST.get("description", "").strip()
+        error = None
+        success = None
+
+        try:
+            amount = Decimal(amount_raw)
+            if amount <= 0:
+                raise ValueError("Summa musbat bo'lishi kerak.")
+        except (InvalidOperation, ValueError, TypeError):
+            error = "To'g'ri qarz summasini kiriting (masalan: 50000)."
+
+        if not error:
+            try:
+                post_charge(
+                    member=member,
+                    transaction_type=TransactionType.MANUAL_CHARGE,
+                    amount=amount,
+                    description=description or "Qo'lda qo'shilgan qarz",
+                    created_by=request.user,
+                )
+                success = f"{amount:,.0f} UZS qarz yozildi."
+            except Exception as exc:
+                error = str(exc)
+
+        ctx = get_member_profile_context(member)
+        ctx["charge_error"] = error
+        ctx["charge_success"] = success
+
+        if request.headers.get("HX-Request"):
+            return render(request, "members/_profile_summary.html", ctx)
+        return redirect("members:profile", pk=member.pk)
 
 
 @login_required

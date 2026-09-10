@@ -4,312 +4,213 @@
 {% block title %}{{ member.full_name }} — Profil{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
+<div class="space-y-6 w-full max-w-full overflow-x-hidden">
 
   <!-- Top Navigation & Header -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-    <div class="flex items-center gap-3">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
+    <div class="flex items-center gap-3 min-w-0">
       <a href="{% url 'members:list' %}"
-         class="p-2 bg-[#13161B] hover:bg-[#1A1E25] border border-[#252A33] rounded-xl text-[#8A919E] hover:text-[#F0F2F5] transition-colors">
+         class="p-2.5 bg-[#13161B] hover:bg-[#1A1E25] border border-[#252A33] rounded-xl text-[#8A919E] hover:text-[#F0F2F5] transition-colors flex-shrink-0">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
           <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd"/>
         </svg>
       </a>
-      <div>
-        <div class="flex items-center gap-2">
-          <h1 class="text-2xl font-bold text-[#F0F2F5]">{{ member.full_name }}</h1>
+      <div class="min-w-0 flex-1">
+        <div class="flex items-center gap-2 flex-wrap">
+          <h1 class="text-xl sm:text-2xl font-bold text-[#F0F2F5] truncate">{{ member.full_name }}</h1>
           {% if member.is_active %}
-            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex-shrink-0">
               Faol
             </span>
           {% else %}
-            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20">
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20 flex-shrink-0">
               Nofaol
             </span>
           {% endif %}
         </div>
-        <p class="text-xs text-[#8A919E] mt-0.5">
-          Kod: <span class="font-mono text-[#F0F2F5]">{{ member.member_code }}</span> • Telefon: <span class="text-[#F0F2F5]">{{ member.phone }}</span>
+        <p class="text-xs text-[#8A919E] mt-0.5 flex flex-wrap items-center gap-2">
+          <span>Kod: <strong class="font-mono text-[#F0F2F5]">{{ member.member_code }}</strong></span>
+          <span>•</span>
+          <span>Telefon: <strong class="text-[#F0F2F5]">{{ member.phone }}</strong></span>
         </p>
       </div>
     </div>
 
     <!-- Quick action buttons -->
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 flex-shrink-0">
       <a href="{% url 'members:reception' %}"
-         class="px-3 py-2 bg-[#1A1E25] hover:bg-[#252A33] border border-[#252A33] text-[#F0F2F5] text-xs font-medium rounded-xl transition-colors">
+         class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#1A1E25] hover:bg-[#252A33] border border-[#252A33] text-[#F0F2F5] text-xs font-medium rounded-xl transition-colors min-h-[44px]">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+          <path d="M2.5 3A1.5 1.5 0 001 4.5v4A1.5 1.5 0 002.5 10h15A1.5 1.5 0 0019 8.5v-4A1.5 1.5 0 0017.5 3h-15zM1 12.5A1.5 1.5 0 002.5 11h15a1.5 1.5 0 011.5 1.5v4a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 011 16.5v-4z"/>
+        </svg>
         Qabul stoliga o'tish
       </a>
     </div>
   </div>
 
-  <!-- Overview Stats Grid -->
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-
-    <!-- Balance Card -->
-    <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-5">
-      <span class="text-xs font-medium text-[#8A919E] uppercase tracking-wide">Hisob balansi</span>
-      <div class="mt-2">
-        {% if balance > 0 %}
-          <p class="text-2xl font-bold tabular-nums text-red-400">{{ balance|intcomma }} UZS</p>
-          <p class="text-xs text-red-400/80 mt-0.5">💳 Qarz mavjud</p>
-        {% elif balance < 0 %}
-          <p class="text-2xl font-bold tabular-nums text-emerald-400">{{ balance|intcomma }} UZS</p>
-          <p class="text-xs text-emerald-400/80 mt-0.5">Ortiqcha to'lov (avans)</p>
-        {% else %}
-          <p class="text-2xl font-bold tabular-nums text-[#F0F2F5]">0.00 UZS</p>
-          <p class="text-xs text-emerald-400/80 mt-0.5">Qarzdorlik yo'q</p>
-        {% endif %}
-      </div>
+  <!-- ACTION FORMS SECTION: Manage Member directly from Profile -->
+  <div class="space-y-3">
+    <div class="flex items-center justify-between">
+      <h2 class="text-sm font-semibold text-[#F0F2F5] uppercase tracking-wide">Profil amallari (Boshqaruv)</h2>
+      <span class="text-xs text-[#8A919E]">To'g'ridan-to'g'ri amallar</span>
     </div>
 
-    <!-- Active Plan Card -->
-    <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-5">
-      <span class="text-xs font-medium text-[#8A919E] uppercase tracking-wide">Amaldagi tarif</span>
-      <div class="mt-2">
-        {% if active_membership %}
-          <p class="text-lg font-bold text-[#F0F2F5]">{{ active_membership.plan.name }}</p>
-          <p class="text-xs text-[#8A919E] mt-0.5">
-            Muddati: <span class="text-[#F0F2F5]">{{ active_membership.end_date|date:"d-M-Y" }}</span> gacha
-          </p>
-        {% else %}
-          <p class="text-lg font-semibold text-amber-400">Faol reja yo'q</p>
-          <p class="text-xs text-[#8A919E] mt-0.5">A'zolik muddati tugagan yoki olinmagan</p>
-        {% endif %}
-      </div>
-    </div>
+    <div class="grid grid-cols-1 {% if user.is_manager %}md:grid-cols-2 lg:grid-cols-3{% else %}md:grid-cols-2{% endif %} gap-4">
 
-    <!-- Member Details Card -->
-    <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-5 text-xs text-[#8A919E] space-y-1.5">
-      <span class="font-medium uppercase tracking-wide block text-[#8A919E]">Ma'lumotlar</span>
-      <p>Jinsi: <strong class="text-[#F0F2F5]">{{ member.get_gender_display|default:"Ko'rsatilmagan" }}</strong></p>
-      <p>Tug'ilgan sana: <strong class="text-[#F0F2F5]">{{ member.date_of_birth|date:"d-M-Y"|default:"Ko'rsatilmagan" }}</strong></p>
-      {% if member.address %}<p>Manzil: <strong class="text-[#F0F2F5]">{{ member.address }}</strong></p>{% endif %}
-      {% if member.notes %}<p class="text-amber-400/90">Eslatma: {{ member.notes }}</p>{% endif %}
-    </div>
+      <!-- CARD 1: Add Membership Form -->
+      <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-4 flex flex-col justify-between space-y-3">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-7 h-7 rounded-lg bg-emerald-600/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
+              ⚡
+            </div>
+            <h3 class="text-xs font-bold text-[#F0F2F5] uppercase tracking-wide">Yangi a'zolik qo'shish</h3>
+          </div>
+          <p class="text-[11px] text-[#8A919E] mb-3">Reja tanlang va boshlanish sanasini belgilang.</p>
 
-  </div>
-
-  <!-- TABS: Sections (Memberships, Attendance, Purchases, Payments, Ledger) -->
-  <div x-data="{ tab: 'memberships' }" class="bg-[#13161B] border border-[#252A33] rounded-2xl overflow-hidden shadow-xl shadow-black/20">
-
-    <!-- Tab Bar -->
-    <div class="flex border-b border-[#252A33] overflow-x-auto bg-[#1A1E25]/50">
-      <button @click="tab = 'memberships'"
-              :class="tab === 'memberships' ? 'border-b-2 border-emerald-500 text-emerald-400 font-semibold' : 'text-[#8A919E] hover:text-[#F0F2F5]'"
-              class="py-3 px-5 text-xs whitespace-nowrap transition-colors">
-        A'zoliklar ({{ memberships|length }})
-      </button>
-      <button @click="tab = 'attendance'"
-              :class="tab === 'attendance' ? 'border-b-2 border-emerald-500 text-emerald-400 font-semibold' : 'text-[#8A919E] hover:text-[#F0F2F5]'"
-              class="py-3 px-5 text-xs whitespace-nowrap transition-colors">
-        Davomat ({{ attendances|length }})
-      </button>
-      <button @click="tab = 'sales'"
-              :class="tab === 'sales' ? 'border-b-2 border-emerald-500 text-emerald-400 font-semibold' : 'text-[#8A919E] hover:text-[#F0F2F5]'"
-              class="py-3 px-5 text-xs whitespace-nowrap transition-colors">
-        Xaridlar ({{ product_sales|length }})
-      </button>
-      <button @click="tab = 'payments'"
-              :class="tab === 'payments' ? 'border-b-2 border-emerald-500 text-emerald-400 font-semibold' : 'text-[#8A919E] hover:text-[#F0F2F5]'"
-              class="py-3 px-5 text-xs whitespace-nowrap transition-colors">
-        To'lovlar ({{ payments|length }})
-      </button>
-      <button @click="tab = 'ledger'"
-              :class="tab === 'ledger' ? 'border-b-2 border-emerald-500 text-emerald-400 font-semibold' : 'text-[#8A919E] hover:text-[#F0F2F5]'"
-              class="py-3 px-5 text-xs whitespace-nowrap transition-colors">
-        Moliyaviy Ledger ({{ ledger|length }})
-      </button>
-    </div>
-
-    <!-- TAB 1: MEMBERSHIPS -->
-    <div x-show="tab === 'memberships'" class="p-5 space-y-5">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
-          <thead>
-            <tr class="border-b border-[#252A33] text-[#8A919E] uppercase font-semibold">
-              <th class="py-2.5 px-3">Tarif</th>
-              <th class="py-2.5 px-3">Boshlanish</th>
-              <th class="py-2.5 px-3">Tugash</th>
-              <th class="py-2.5 px-3">Narxi</th>
-              <th class="py-2.5 px-3">Holati</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-[#252A33]">
-            {% for m in memberships %}
-            <tr class="hover:bg-[#1A1E25]/50 transition-colors">
-              <td class="py-2.5 px-3 font-semibold text-[#F0F2F5]">{{ m.plan.name }}</td>
-              <td class="py-2.5 px-3 text-[#8A919E]">{{ m.start_date|date:"d-M-Y" }}</td>
-              <td class="py-2.5 px-3 text-[#8A919E]">{{ m.end_date|date:"d-M-Y" }}</td>
-              <td class="py-2.5 px-3 tabular-nums font-medium text-[#F0F2F5]">{{ m.price_at_purchase|intcomma }} UZS</td>
-              <td class="py-2.5 px-3">
-                {% if m.status == 'ACTIVE' %}
-                  <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Faol</span>
-                {% elif m.status == 'EXPIRED' %}
-                  <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-[#1A1E25] text-[#8A919E] border border-[#252A33]">Tugagan</span>
-                {% else %}
-                  <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-red-500/10 text-red-400 border border-red-500/20">{{ m.get_status_display }}</span>
-                {% endif %}
-              </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="5" class="py-8 text-center text-[#8A919E]">A'zolik yozuvlari yo'q</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- TAB 2: ATTENDANCE -->
-    <div x-show="tab === 'attendance'" style="display:none;" class="p-5">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
-          <thead>
-            <tr class="border-b border-[#252A33] text-[#8A919E] uppercase font-semibold">
-              <th class="py-2.5 px-3">Sana</th>
-              <th class="py-2.5 px-3">Kirish vaqti</th>
-              <th class="py-2.5 px-3">Chiqish vaqti</th>
-              <th class="py-2.5 px-3">Tarif turi</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-[#252A33]">
-            {% for a in attendances %}
-            <tr class="hover:bg-[#1A1E25]/50 transition-colors">
-              <td class="py-2.5 px-3 font-semibold text-[#F0F2F5]">{{ a.date|date:"d-M-Y" }}</td>
-              <td class="py-2.5 px-3 text-emerald-400 font-medium">{{ a.check_in|time:"H:i" }}</td>
-              <td class="py-2.5 px-3 text-[#8A919E]">{{ a.check_out|time:"H:i"|default:"Chiqmagan" }}</td>
-              <td class="py-2.5 px-3 text-[#8A919E]">{{ a.membership.plan.name|default:"—" }}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="4" class="py-8 text-center text-[#8A919E]">Davomat yozuvlari yo'q</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- TAB 3: PURCHASES -->
-    <div x-show="tab === 'sales'" style="display:none;" class="p-5">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
-          <thead>
-            <tr class="border-b border-[#252A33] text-[#8A919E] uppercase font-semibold">
-              <th class="py-2.5 px-3">Sana</th>
-              <th class="py-2.5 px-3">Mahsulotlar</th>
-              <th class="py-2.5 px-3 text-right">Summa</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-[#252A33]">
-            {% for s in product_sales %}
-            <tr class="hover:bg-[#1A1E25]/50 transition-colors">
-              <td class="py-2.5 px-3 text-[#8A919E]">{{ s.created_at|date:"d-M-Y H:i" }}</td>
-              <td class="py-2.5 px-3 text-[#F0F2F5]">
-                {% for item in s.items.all %}
-                  {{ item.product.name }} (x{{ item.quantity }}){% if not forloop.last %}, {% endif %}
+          <form hx-post="{% url 'members:add_membership' member.pk %}"
+                hx-target="#profile-data-container"
+                hx-swap="outerHTML"
+                class="space-y-3">
+            {% csrf_token %}
+            <div>
+              <label class="block text-[11px] font-medium text-[#8A919E] mb-1">Tarif rejasi *</label>
+              <select name="plan_id"
+                      required
+                      class="w-full bg-[#1A1E25] border border-[#252A33] rounded-xl px-3 py-2 text-base sm:text-xs text-[#F0F2F5] focus:outline-none focus:border-emerald-500">
+                <option value="">Rejani tanlang...</option>
+                {% for plan in plans %}
+                  <option value="{{ plan.pk }}">
+                    {{ plan.name }} — {{ plan.price|intcomma }} UZS ({{ plan.get_plan_type_display }})
+                  </option>
                 {% endfor %}
-              </td>
-              <td class="py-2.5 px-3 text-right font-bold tabular-nums text-[#F0F2F5]">{{ s.total_amount|intcomma }} UZS</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="3" class="py-8 text-center text-[#8A919E]">Xaridlar yozuvlari yo'q</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
+              </select>
+            </div>
 
-    <!-- TAB 4: PAYMENTS -->
-    <div x-show="tab === 'payments'" style="display:none;" class="p-5">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
-          <thead>
-            <tr class="border-b border-[#252A33] text-[#8A919E] uppercase font-semibold">
-              <th class="py-2.5 px-3">Sana</th>
-              <th class="py-2.5 px-3">Usul</th>
-              <th class="py-2.5 px-3">Summa</th>
-              <th class="py-2.5 px-3">Oldingi balans</th>
-              <th class="py-2.5 px-3">Keyingi balans</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-[#252A33]">
-            {% for p in payments %}
-            <tr class="hover:bg-[#1A1E25]/50 transition-colors">
-              <td class="py-2.5 px-3 text-[#8A919E]">{{ p.created_at|date:"d-M-Y H:i" }}</td>
-              <td class="py-2.5 px-3 text-[#F0F2F5]">{{ p.get_payment_method_display }}</td>
-              <td class="py-2.5 px-3 font-bold tabular-nums text-emerald-400">{{ p.amount|intcomma }} UZS</td>
-              <td class="py-2.5 px-3 tabular-nums text-[#8A919E]">{{ p.balance_before|intcomma }} UZS</td>
-              <td class="py-2.5 px-3 tabular-nums text-[#8A919E]">{{ p.balance_after|intcomma }} UZS</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="5" class="py-8 text-center text-[#8A919E]">To'lovlar tarixi yo'q</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
+            <div>
+              <label class="block text-[11px] font-medium text-[#8A919E] mb-1">Boshlanish sanasi</label>
+              <input type="date"
+                     name="start_date"
+                     class="w-full bg-[#1A1E25] border border-[#252A33] rounded-xl px-3 py-2 text-base sm:text-xs text-[#F0F2F5] focus:outline-none focus:border-emerald-500">
+              <span class="text-[10px] text-[#8A919E]/60 mt-0.5 block">Bo'sh qoldirilsa — bugungi sana</span>
+            </div>
 
-    <!-- TAB 5: FINANCIAL LEDGER -->
-    <div x-show="tab === 'ledger'" style="display:none;" class="p-5 space-y-3">
-      <div class="flex items-center justify-between text-xs text-[#8A919E]">
-        <p>Ledger — o'zgartirib bo'lmas moliyaviy haqiqat manbai (Append-only).</p>
+            <button type="submit"
+                    class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20 min-h-[44px]">
+              + A'zolikni faollashtirish
+            </button>
+          </form>
+        </div>
       </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
-          <thead>
-            <tr class="border-b border-[#252A33] text-[#8A919E] uppercase font-semibold">
-              <th class="py-2.5 px-3">Sana</th>
-              <th class="py-2.5 px-3">Turi</th>
-              <th class="py-2.5 px-3">Tavsif</th>
-              <th class="py-2.5 px-3">Yo'nalish</th>
-              <th class="py-2.5 px-3 text-right">Summa</th>
-              {% if user.is_manager %}
-              <th class="py-2.5 px-3 text-right">Amal</th>
-              {% endif %}
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-[#252A33]">
-            {% for entry in ledger %}
-            <tr class="hover:bg-[#1A1E25]/50 transition-colors {% if entry.reversed_by %}opacity-40 line-through{% endif %}">
-              <td class="py-2.5 px-3 text-[#8A919E] whitespace-nowrap">{{ entry.created_at|date:"d-M-Y H:i" }}</td>
-              <td class="py-2.5 px-3 font-medium text-[#F0F2F5]">{{ entry.get_transaction_type_display }}</td>
-              <td class="py-2.5 px-3 text-[#8A919E]">{{ entry.description }}</td>
-              <td class="py-2.5 px-3">
-                {% if entry.direction == 'DEBIT' %}
-                  <span class="text-red-400 font-bold">Qarz (+)</span>
-                {% else %}
-                  <span class="text-emerald-400 font-bold">To'lov (-)</span>
-                {% endif %}
-              </td>
-              <td class="py-2.5 px-3 text-right font-bold tabular-nums {% if entry.direction == 'DEBIT' %}text-red-400{% else %}text-emerald-400{% endif %}">
-                {% if entry.direction == 'DEBIT' %}+{% else %}-{% endif %}{{ entry.amount|intcomma }} UZS
-              </td>
-              {% if user.is_manager %}
-              <td class="py-2.5 px-3 text-right">
-                {% if not entry.reversed_by and not entry.reverses %}
-                  <form method="post" action="{% url 'billing:reverse_entry' entry.pk %}"
-                        onsubmit="return confirm('Haqiqatan ham ushbu yozuvni bekor qilib teskari yozuv kiritmoqchimisiz?');">
-                    {% csrf_token %}
-                    <input type="hidden" name="reason" value="Manager manual correction">
-                    <button type="submit"
-                            class="px-2 py-0.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded text-[10px] transition-colors">
-                      Bekor qilish
-                    </button>
-                  </form>
-                {% else %}
-                  <span class="text-[10px] text-[#8A919E]">Tuzatilgan</span>
-                {% endif %}
-              </td>
-              {% endif %}
-            </tr>
-            {% empty %}
-            <tr><td colspan="6" class="py-8 text-center text-[#8A919E]">Ledger yozuvlari yo'q</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
 
+      <!-- CARD 2: Add Payment Form -->
+      <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-4 flex flex-col justify-between space-y-3">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-7 h-7 rounded-lg bg-sky-600/20 text-sky-400 flex items-center justify-center font-bold text-xs">
+              💳
+            </div>
+            <h3 class="text-xs font-bold text-[#F0F2F5] uppercase tracking-wide">To'lov qabul qilish</h3>
+          </div>
+          <p class="text-[11px] text-[#8A919E] mb-3">Kassaga to'lov kiritish va balansni to'ldirish.</p>
+
+          <form hx-post="{% url 'members:add_payment' member.pk %}"
+                hx-target="#profile-data-container"
+                hx-swap="outerHTML"
+                class="space-y-3">
+            {% csrf_token %}
+            <div>
+              <label class="block text-[11px] font-medium text-[#8A919E] mb-1">To'lov summasi (UZS) *</label>
+              <input type="number"
+                     name="amount"
+                     step="1000"
+                     min="1000"
+                     required
+                     value="{% if balance > 0 %}{{ balance|floatformat:0 }}{% endif %}"
+                     placeholder="Masalan: 150000"
+                     class="w-full bg-[#1A1E25] border border-[#252A33] rounded-xl px-3 py-2 text-base sm:text-xs text-[#F0F2F5] focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-medium text-[#8A919E] mb-1">To'lov usuli *</label>
+              <select name="payment_method"
+                      class="w-full bg-[#1A1E25] border border-[#252A33] rounded-xl px-3 py-2 text-base sm:text-xs text-[#F0F2F5] focus:outline-none focus:border-emerald-500">
+                <option value="CASH">Naqd pul</option>
+                <option value="CARD">Plastik karta (Uzcard / Humo)</option>
+                <option value="TRANSFER">O'tkazma (Payme / Click)</option>
+                <option value="OTHER">Boshqa</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-medium text-[#8A919E] mb-1">Izoh (ixtiyoriy)</label>
+              <input type="text"
+                     name="note"
+                     placeholder="Masalan: Avans yoki chek raqami"
+                     class="w-full bg-[#1A1E25] border border-[#252A33] rounded-xl px-3 py-2 text-base sm:text-xs text-[#F0F2F5] focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <button type="submit"
+                    class="w-full py-2.5 px-4 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-sky-600/20 min-h-[44px]">
+              💳 To'lovni tasdiqlash
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- CARD 3: Add Manual Charge (OWNER / MANAGER ONLY) -->
+      {% if user.is_manager %}
+      <div class="bg-[#13161B] border border-amber-500/20 rounded-2xl p-4 flex flex-col justify-between space-y-3">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs">
+              ⚠️
+            </div>
+            <h3 class="text-xs font-bold text-[#F0F2F5] uppercase tracking-wide">Qo'lda qarz qo'shish</h3>
+          </div>
+          <p class="text-[11px] text-amber-400/80 mb-3">Faqat menejer / egasi uchun ruxsat etilgan amal.</p>
+
+          <form hx-post="{% url 'members:add_manual_charge' member.pk %}"
+                hx-target="#profile-data-container"
+                hx-swap="outerHTML"
+                class="space-y-3">
+            {% csrf_token %}
+            <div>
+              <label class="block text-[11px] font-medium text-[#8A919E] mb-1">Qarz summasi (UZS) *</label>
+              <input type="number"
+                     name="amount"
+                     step="1000"
+                     min="1000"
+                     required
+                     placeholder="Masalan: 50000"
+                     class="w-full bg-[#1A1E25] border border-[#252A33] rounded-xl px-3 py-2 text-base sm:text-xs text-[#F0F2F5] focus:outline-none focus:border-amber-500">
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-medium text-[#8A919E] mb-1">Izoh / Sabab *</label>
+              <input type="text"
+                     name="description"
+                     required
+                     placeholder="Masalan: Shkaf ijarasi yoki jarima"
+                     class="w-full bg-[#1A1E25] border border-[#252A33] rounded-xl px-3 py-2 text-base sm:text-xs text-[#F0F2F5] focus:outline-none focus:border-amber-500">
+            </div>
+
+            <div class="pt-7">
+              <button type="submit"
+                      class="w-full py-2.5 px-4 bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-amber-600/20 min-h-[44px]">
+                ⚠️ Qarzni hisobga yozish
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
   </div>
+
+  <!-- Real-time dynamic profile data (included partial) -->
+  {% include "members/_profile_summary.html" %}
 
 </div>
 {% endblock %}

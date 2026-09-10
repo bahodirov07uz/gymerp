@@ -1,9 +1,9 @@
 {% load static humanize %}
 <!DOCTYPE html>
-<html lang="uz" class="dark">
+<html lang="uz" class="dark overflow-x-hidden">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>{% block title %}GymCRM{% endblock %} — Sport Zal Boshqaruvi</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -12,6 +12,7 @@
   <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
   <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <style>
+    html, body { overflow-x: hidden; max-width: 100%; }
     body { font-family: 'Inter', sans-serif; background-color: #0D0F12; color: #F0F2F5; }
     .htmx-indicator { display: none; }
     .htmx-request .htmx-indicator { display: inline-flex; }
@@ -29,7 +30,7 @@
   </style>
   {% block extra_head %}{% endblock %}
 </head>
-<body class="min-h-screen bg-[#0D0F12] antialiased">
+<body class="min-h-screen bg-[#0D0F12] antialiased overflow-x-hidden">
 
   {% if user.is_authenticated %}
   <!-- Mobile overlay -->
@@ -74,6 +75,15 @@
             <path d="M2.5 3A1.5 1.5 0 001 4.5v4A1.5 1.5 0 002.5 10h15A1.5 1.5 0 0019 8.5v-4A1.5 1.5 0 0017.5 3h-15zM1 12.5A1.5 1.5 0 002.5 11h15a1.5 1.5 0 011.5 1.5v4a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 011 16.5v-4z"/>
           </svg>
           Qabul
+        </a>
+
+        <a href="{% url 'attendance:board' %}"
+           class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors
+                  {% if request.resolver_match.namespace == 'attendance' and request.resolver_match.url_name == 'board' %}bg-emerald-600/10 text-emerald-400 border border-emerald-600/20{% else %}text-[#8A919E] hover:text-[#F0F2F5] hover:bg-[#1A1E25]{% endif %}">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clip-rule="evenodd"/>
+          </svg>
+          Davomat
         </a>
 
         <a href="{% url 'members:list' %}"

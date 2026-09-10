@@ -10,6 +10,39 @@ from apps.products.models import Product
 from .services import create_product_sale
 
 
+class ProductSearchView(LoginRequiredMixin, View):
+    """HTMX endpoint: search active products by name.
+    Empty query or query < 2 chars returns an empty queryset.
+    Otherwise returns at most 15 matches.
+    """
+
+    def get(self, request, *args, **kwargs):
+        q = request.GET.get("q", "").strip()
+        if not q:
+            products = Product.objects.none()
+            searched = False
+            too_short = False
+        elif len(q) < 2:
+            products = Product.objects.none()
+            searched = True
+            too_short = True
+        else:
+            products = Product.objects.filter(is_active=True, name__icontains=q).order_by("name")[:15]
+            searched = True
+            too_short = False
+
+        return render(
+            request,
+            "members/_product_search_results.html",
+            {
+                "products": products,
+                "query": q,
+                "searched": searched,
+                "too_short": too_short,
+            },
+        )
+
+
 class AddProductSaleView(LoginRequiredMixin, View):
     """HTMX endpoint: add one or more products to the member's tab
     from the reception screen in a single atomic transaction."""
