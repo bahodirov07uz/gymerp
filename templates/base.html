@@ -27,10 +27,80 @@
     input[type="number"]::-webkit-inner-spin-button { opacity: 0.5; }
     .nav-link { @apply flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-[#8A919E] hover:text-[#F0F2F5] hover:bg-[#1A1E25] transition-colors; }
     .nav-link.active { @apply bg-emerald-600/10 text-emerald-400 border border-emerald-600/20; }
+
+    /* Bottom mobile nav */
+    #bottom-nav {
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .bnav-link {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      flex: 1;
+      padding: 6px 2px 8px;
+      color: #8A919E;
+      transition: color 150ms ease;
+    }
+    .bnav-link.active { color: #34D399; }
+    .bnav-link svg { width: 22px; height: 22px; }
+    .bnav-link span { font-size: 10px; font-weight: 500; line-height: 1; }
   </style>
   {% block extra_head %}{% endblock %}
 </head>
 <body class="min-h-screen bg-[#0D0F12] antialiased overflow-x-hidden">
+
+  <!-- GLOBAL TOAST NOTIFICATION CONTAINER (Fixed top-center, above all modals z-[9999]) -->
+  <div id="toast-container"
+       x-data="{
+         toasts: [],
+         add(message, type = 'success') {
+           const id = Date.now() + Math.random();
+           this.toasts.push({ id, message, type });
+           setTimeout(() => this.remove(id), 4000);
+         },
+         remove(id) {
+           this.toasts = this.toasts.filter(t => t.id !== id);
+         }
+       }"
+       x-on:show-toast.window="add($event.detail.message, $event.detail.type || 'success')"
+       class="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2 pointer-events-none w-full max-w-md px-4"
+       style="pointer-events: none;">
+    <template x-for="toast in toasts" :key="toast.id">
+      <div x-transition:enter="transition ease-out duration-300 transform"
+           x-transition:enter-start="-translate-y-4 opacity-0 scale-95"
+           x-transition:enter-end="translate-y-0 opacity-100 scale-100"
+           x-transition:leave="transition ease-in duration-200 transform"
+           x-transition:leave-start="translate-y-0 opacity-100 scale-100"
+           x-transition:leave-end="-translate-y-4 opacity-0 scale-95"
+           :class="{
+             'bg-[#13161B] text-emerald-400 border-emerald-500/30 shadow-emerald-950/40': toast.type === 'success',
+             'bg-[#13161B] text-red-400 border-red-500/30 shadow-red-950/40': toast.type === 'error',
+             'bg-[#13161B] text-amber-400 border-amber-500/30 shadow-amber-950/40': toast.type === 'warning',
+             'bg-[#13161B] text-sky-400 border-sky-500/30 shadow-sky-950/40': toast.type === 'info'
+           }"
+           class="pointer-events-auto flex items-center justify-between gap-3 px-4 py-3 rounded-xl border shadow-2xl backdrop-blur-md text-sm font-medium w-full">
+        <div class="flex items-center gap-2.5 min-w-0 flex-1">
+          <span class="text-base flex-shrink-0 font-bold" x-text="toast.type === 'success' ? '✓' : (toast.type === 'error' ? '✕' : 'ℹ')"></span>
+          <span class="truncate text-[#F0F2F5]" x-text="toast.message"></span>
+        </div>
+        <button type="button" @click="remove(toast.id)" class="text-[#8A919E] hover:text-[#F0F2F5] flex-shrink-0 p-1 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </template>
+  </div>
+
+  {% if messages %}
+  <div x-data x-init="
+    {% for message in messages %}
+      $dispatch('show-toast', { message: '{{ message|escapejs }}', type: '{% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}success{% endif %}' });
+    {% endfor %}
+  "></div>
+  {% endif %}
 
   {% if user.is_authenticated %}
   <!-- Mobile overlay -->
@@ -213,32 +283,57 @@
         </div>
       </header>
 
-      <!-- FLASH MESSAGES -->
-      {% if messages %}
-      <div class="px-4 sm:px-6 lg:px-8 pt-4 space-y-2">
-        {% for message in messages %}
-        <div x-data="{ show: true }" x-show="show" x-transition
-             class="flex items-start gap-3 p-3 rounded-xl text-sm border
-                    {% if message.tags == 'success' %}bg-emerald-500/10 border-emerald-500/20 text-emerald-400
-                    {% elif message.tags == 'error' %}bg-red-500/10 border-red-500/20 text-red-400
-                    {% elif message.tags == 'warning' %}bg-amber-500/10 border-amber-500/20 text-amber-400
-                    {% else %}bg-sky-500/10 border-sky-500/20 text-sky-400{% endif %}">
-          <span class="flex-1">{{ message }}</span>
-          <button @click="show = false" class="flex-shrink-0 opacity-60 hover:opacity-100">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-              <path d="M5.28 4.22a.75.75 0 00-1.06 1.06L6.94 8l-2.72 2.72a.75.75 0 101.06 1.06L8 9.06l2.72 2.72a.75.75 0 101.06-1.06L9.06 8l2.72-2.72a.75.75 0 00-1.06-1.06L8 6.94 5.28 4.22z"/>
-            </svg>
-          </button>
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %}
-
       <!-- PAGE CONTENT -->
-      <main class="flex-1 px-4 sm:px-6 lg:px-8 py-6">
+      <main class="flex-1 px-4 sm:px-6 lg:px-8 py-6 pb-24 lg:pb-6">
         {% block content %}{% endblock %}
       </main>
     </div>
+
+    <!-- BOTTOM MOBILE NAV (only on mobile, hidden on lg+) -->
+    <nav id="bottom-nav"
+         class="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-[#13161B] border-t border-[#252A33] flex items-stretch">
+
+      <a href="{% url 'dashboard:index' %}"
+         class="bnav-link {% if request.resolver_match.namespace == 'dashboard' %}active{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd"/>
+        </svg>
+        <span>Bosh sahifa</span>
+      </a>
+
+      <a href="{% url 'members:reception' %}"
+         class="bnav-link {% if request.resolver_match.url_name == 'reception' %}active{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M2.5 3A1.5 1.5 0 001 4.5v4A1.5 1.5 0 002.5 10h15A1.5 1.5 0 0019 8.5v-4A1.5 1.5 0 0017.5 3h-15zM1 12.5A1.5 1.5 0 002.5 11h15a1.5 1.5 0 011.5 1.5v4a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 011 16.5v-4z"/>
+        </svg>
+        <span>Qabul</span>
+      </a>
+
+      <a href="{% url 'attendance:board' %}"
+         class="bnav-link {% if request.resolver_match.namespace == 'attendance' and request.resolver_match.url_name == 'board' %}active{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clip-rule="evenodd"/>
+        </svg>
+        <span>Davomat</span>
+      </a>
+
+      <a href="{% url 'members:list' %}"
+         class="bnav-link {% if request.resolver_match.namespace == 'members' and request.resolver_match.url_name == 'list' %}active{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M7 8a3 3 0 100-6 3 3 0 000 6zM14.5 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM1.615 16.428a1.224 1.224 0 01-.569-1.175 6.002 6.002 0 0111.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 017 17a9.953 9.953 0 01-5.385-1.572zM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 00-1.588-3.755 4.502 4.502 0 015.874 2.636.818.818 0 01-.36.98A7.465 7.465 0 0114.5 16z"/>
+        </svg>
+        <span>A'zolar</span>
+      </a>
+
+      <!-- "Ko'proq" — sidebar drawer'ni ochadi (qolgan barcha bo'limlar: qarzdorlar, ombor, hisobotlar) -->
+      <button type="button" @click="open = true"
+         class="bnav-link {% if open %}active{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
+        </svg>
+        <span>Ko'proq</span>
+      </button>
+    </nav>
 
   </div><!-- x-data wrapper -->
 

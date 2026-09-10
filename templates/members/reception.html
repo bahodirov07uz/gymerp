@@ -105,15 +105,14 @@
     <!-- RIGHT COLUMN: Active Member Action Card (7 cols on lg) -->
     <div class="lg:col-span-7">
 
-      <!--
+<!--
         Mobile bottom-sheet modal wrapper (Alpine).
         - #member-card stays in DOM at all times so HTMX targets always resolve.
         - Container visibility on mobile toggled via CSS classes.
-        - Automatically opens on htmx:after-swap targeting #member-card with non-empty content.
       -->
       <div id="member-card-modal"
            x-data="{ open: false }"
-           x-on:htmx:after-swap.window="if ($event.detail.target && $event.detail.target.id === 'member-card' && $event.detail.target.innerHTML.trim() !== '') { open = true; }"
+           x-on:htmx:after-swap.window="$event.detail.target && $event.detail.target.id === 'member-card' && $event.detail.target.innerHTML.trim() !== '' ? open = true : open = false"
            x-on:close-member-modal.window="open = false"
            @keydown.escape.window="open = false">
 
