@@ -5,4 +5,4 @@ class DashboardConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "apps.dashboard"
     label = "dashboard"
-    verbose_name = "Dashboard"
+    verbose_name = "Boshqaruv paneli"

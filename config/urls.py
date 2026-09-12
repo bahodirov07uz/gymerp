@@ -3,6 +3,10 @@ from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
 
+admin.site.site_header = "GymCRM boshqaruvi"
+admin.site.site_title = "GymCRM admin"
+admin.site.index_title = "Boshqaruv paneli"
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("apps.accounts.urls")),

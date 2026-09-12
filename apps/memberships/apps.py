@@ -5,4 +5,4 @@ class MembershipsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "apps.memberships"
     label = "memberships"
-    verbose_name = "Memberships"
+    verbose_name = "A'zoliklar"

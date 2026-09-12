@@ -114,6 +114,8 @@ TIME_ZONE = os.environ.get("DJANGO_TIME_ZONE", "Asia/Tashkent")
 USE_I18N = True
 USE_TZ = True
 
+LOCALE_PATHS = [BASE_DIR / "locale"]
+
 # ---------------------------------------------------------------------------
 # Static / media
 # ---------------------------------------------------------------------------

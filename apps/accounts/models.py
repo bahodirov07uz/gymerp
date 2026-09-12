@@ -3,19 +3,21 @@ from django.db import models
 
 
 class Role(models.TextChoices):
-    OWNER = "OWNER", "Owner"
-    MANAGER = "MANAGER", "Manager"
-    RECEPTIONIST = "RECEPTIONIST", "Receptionist"
+    OWNER = "OWNER", "Egasi"
+    MANAGER = "MANAGER", "Menejer"
+    RECEPTIONIST = "RECEPTIONIST", "Qabulxona xodimi"
 
 
 class User(AbstractUser):
     """Custom user with a gym-specific role used for permission checks."""
 
-    role = models.CharField(max_length=20, choices=Role.choices, default=Role.RECEPTIONIST)
-    phone = models.CharField(max_length=32, blank=True)
+    role = models.CharField("Rol", max_length=20, choices=Role.choices, default=Role.RECEPTIONIST)
+    phone = models.CharField("Telefon", max_length=32, blank=True)
 
     class Meta:
         ordering = ["username"]
+        verbose_name = "Foydalanuvchi"
+        verbose_name_plural = "Foydalanuvchilar"
 
     def __str__(self):
         return f"{self.get_full_name() or self.username} ({self.get_role_display()})"

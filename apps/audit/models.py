@@ -6,17 +6,19 @@ class AuditLog(models.Model):
     """Immutable trail of important actions across the system."""
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, blank=True,
+        settings.AUTH_USER_MODEL, verbose_name="Foydalanuvchi", null=True, blank=True,
         on_delete=models.SET_NULL, related_name="audit_logs",
     )
-    action = models.CharField(max_length=64)
-    object_type = models.CharField(max_length=64)
-    object_id = models.CharField(max_length=64, blank=True)
-    metadata = models.JSONField(default=dict, blank=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    action = models.CharField("Amal", max_length=64)
+    object_type = models.CharField("Obyekt turi", max_length=64)
+    object_id = models.CharField("Obyekt ID", max_length=64, blank=True)
+    metadata = models.JSONField("Qo'shimcha ma'lumot", default=dict, blank=True)
+    timestamp = models.DateTimeField("Vaqt", auto_now_add=True)
 
     class Meta:
         ordering = ["-timestamp"]
+        verbose_name = "Audit yozuvi"
+        verbose_name_plural = "Audit yozuvlari"
         indexes = [
             models.Index(fields=["object_type", "object_id"]),
             models.Index(fields=["-timestamp"]),

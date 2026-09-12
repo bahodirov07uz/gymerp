@@ -16,21 +16,23 @@ MEMBER_PHOTO_MAX_DIMENSION = 400
 class Member(models.Model):
     GENDER_CHOICES = [("M", "Erkak"), ("F", "Ayol")]
 
-    member_code = models.CharField(max_length=20, unique=True, db_index=True)
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    phone = models.CharField(max_length=32, db_index=True)
-    date_of_birth = models.DateField(null=True, blank=True)
-    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True)
-    address = models.CharField(max_length=255, blank=True)
-    notes = models.TextField(blank=True)
-    photo = models.ImageField(upload_to="members/%Y/%m/", blank=True, null=True)
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    member_code = models.CharField("A'zo kodi", max_length=20, unique=True, db_index=True)
+    first_name = models.CharField("Ism", max_length=100)
+    last_name = models.CharField("Familiya", max_length=100)
+    phone = models.CharField("Telefon", max_length=32, db_index=True)
+    date_of_birth = models.DateField("Tug'ilgan sana", null=True, blank=True)
+    gender = models.CharField("Jinsi", max_length=1, choices=GENDER_CHOICES, blank=True)
+    address = models.CharField("Manzil", max_length=255, blank=True)
+    notes = models.TextField("Izohlar", blank=True)
+    photo = models.ImageField("Profil rasmi", upload_to="members/%Y/%m/", blank=True, null=True)
+    is_active = models.BooleanField("Faol", default=True)
+    created_at = models.DateTimeField("Yaratilgan", auto_now_add=True)
+    updated_at = models.DateTimeField("Yangilangan", auto_now=True)
 
     class Meta:
         ordering = ["first_name", "last_name"]
+        verbose_name = "A'zo"
+        verbose_name_plural = "A'zolar"
         indexes = [
             models.Index(fields=["phone"]),
             models.Index(fields=["member_code"]),

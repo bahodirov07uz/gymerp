@@ -241,6 +241,18 @@
           </svg>
           ⏳ Muddatlar
         </a>
+
+        {% if user.is_staff %}
+        <div class="my-3 border-t border-[#252A33]"></div>
+        <p class="text-xs font-medium text-[#8A919E] uppercase tracking-wider px-3 mb-2">Tizim</p>
+        <a href="{% url 'admin:index' %}"
+           class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
+            <path fill-rule="evenodd" d="M8.34 1.804A1 1 0 019.32 1h1.36a1 1 0 01.98.804l.295 1.473c.497.144.971.342 1.416.587l1.379-.63a1 1 0 011.342.43l.68 1.177a1 1 0 01-.325 1.37l-1.22.88c.046.285.07.575.07.868 0 .294-.024.584-.07.87l1.22.877a1 1 0 01.325 1.371l-.68 1.177a1 1 0 01-1.342.43l-1.379-.63a6.347 6.347 0 01-1.415.587l-.296 1.473a1 1 0 01-.98.804H9.32a1 1 0 01-.98-.804l-.295-1.473a6.347 6.347 0 01-1.416-.587l-1.379.63a1 1 0 01-1.342-.43l-.68-1.177a1 1 0 01.325-1.37l1.22-.88a6.484 6.484 0 01-.07-.868c0-.294.024-.583.07-.867l-1.22-.878a1 1 0 01-.325-1.371l.68-1.177a1 1 0 011.342-.43l1.38.63a6.347 6.347 0 011.415-.587l.295-1.473zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+          </svg>
+          Admin panel
+        </a>
+        {% endif %}
       </nav>
 
       <!-- User info at bottom -->
@@ -284,8 +296,18 @@
           </svg>
         </button>
         <span class="text-sm font-bold text-[#F0F2F5]">GymCRM</span>
-        <div class="w-8 h-8 rounded-full bg-emerald-600/20 flex items-center justify-center">
-          <span class="text-xs font-bold text-emerald-400">{{ user.username|first|upper }}</span>
+        <div class="flex items-center gap-2">
+          {% if user.is_staff %}
+          <a href="{% url 'admin:index' %}" title="Admin panel"
+             class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center hover:bg-amber-500/20 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+              <path fill-rule="evenodd" d="M8.34 1.804A1 1 0 019.32 1h1.36a1 1 0 01.98.804l.295 1.473c.497.144.971.342 1.416.587l1.379-.63a1 1 0 011.342.43l.68 1.177a1 1 0 01-.325 1.37l-1.22.88c.046.285.07.575.07.868 0 .294-.024.584-.07.87l1.22.877a1 1 0 01.325 1.371l-.68 1.177a1 1 0 01-1.342.43l-1.379-.63a6.347 6.347 0 01-1.415.587l-.296 1.473a1 1 0 01-.98.804H9.32a1 1 0 01-.98-.804l-.295-1.473a6.347 6.347 0 01-1.416-.587l-1.379.63a1 1 0 01-1.342-.43l-.68-1.177a1 1 0 01.325-1.37l1.22-.88a6.484 6.484 0 01-.07-.868c0-.294.024-.583.07-.867l-1.22-.878a1 1 0 01-.325-1.371l.68-1.177a1 1 0 011.342-.43l1.38.63a6.347 6.347 0 011.415-.587l.295-1.473zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+            </svg>
+          </a>
+          {% endif %}
+          <div class="w-8 h-8 rounded-full bg-emerald-600/20 flex items-center justify-center">
+            <span class="text-xs font-bold text-emerald-400">{{ user.username|first|upper }}</span>
+          </div>
         </div>
       </header>
 

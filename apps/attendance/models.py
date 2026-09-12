@@ -3,19 +3,21 @@ from django.db import models
 
 
 class Attendance(models.Model):
-    member = models.ForeignKey("members.Member", on_delete=models.CASCADE, related_name="attendances")
-    date = models.DateField()
-    check_in = models.DateTimeField()
-    check_out = models.DateTimeField(null=True, blank=True)
+    member = models.ForeignKey("members.Member", verbose_name="A'zo", on_delete=models.CASCADE, related_name="attendances")
+    date = models.DateField("Sana")
+    check_in = models.DateTimeField("Kirish vaqti")
+    check_out = models.DateTimeField("Chiqish vaqti", null=True, blank=True)
     membership = models.ForeignKey(
-        "memberships.Membership", null=True, blank=True, on_delete=models.SET_NULL, related_name="attendances"
+        "memberships.Membership", verbose_name="A'zolik", null=True, blank=True, on_delete=models.SET_NULL, related_name="attendances"
     )
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+        settings.AUTH_USER_MODEL, verbose_name="Yaratgan", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
 
     class Meta:
         ordering = ["-date", "-check_in"]
+        verbose_name = "Davomat yozuvi"
+        verbose_name_plural = "Davomat yozuvlari"
         indexes = [models.Index(fields=["member", "date"])]
         constraints = [
             # One OPEN (unchecked-out) session per member at a time.

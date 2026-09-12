@@ -30,32 +30,34 @@ class LedgerTransaction(models.Model):
     drift out of sync with reality.
     """
 
-    member = models.ForeignKey("members.Member", on_delete=models.PROTECT, related_name="ledger_entries")
-    transaction_type = models.CharField(max_length=20, choices=TransactionType.choices)
-    direction = models.CharField(max_length=6, choices=Direction.choices)
-    amount = models.DecimalField(max_digits=14, decimal_places=2)
-    description = models.CharField(max_length=255, blank=True)
+    member = models.ForeignKey("members.Member", verbose_name="A'zo", on_delete=models.PROTECT, related_name="ledger_entries")
+    transaction_type = models.CharField("Operatsiya turi", max_length=20, choices=TransactionType.choices)
+    direction = models.CharField("Yo'nalish", max_length=6, choices=Direction.choices)
+    amount = models.DecimalField("Summa", max_digits=14, decimal_places=2)
+    description = models.CharField("Izoh", max_length=255, blank=True)
 
     # Generic reference to whatever created this entry (Membership,
     # ProductSale, Payment, ...) so the ledger stays fully traceable.
     reference_content_type = models.ForeignKey(
-        ContentType, null=True, blank=True, on_delete=models.SET_NULL
+        ContentType, verbose_name="Bog'liq obyekt turi", null=True, blank=True, on_delete=models.SET_NULL
     )
-    reference_object_id = models.PositiveIntegerField(null=True, blank=True)
+    reference_object_id = models.PositiveIntegerField("Bog'liq obyekt ID", null=True, blank=True)
     reference = GenericForeignKey("reference_content_type", "reference_object_id")
 
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+        settings.AUTH_USER_MODEL, verbose_name="Yaratgan", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField("Yaratilgan", auto_now_add=True)
 
     # Reversal support -- financial rows are never deleted or edited.
     reversed_by = models.OneToOneField(
-        "self", null=True, blank=True, on_delete=models.SET_NULL, related_name="reverses"
+        "self", verbose_name="Bekor qilgan yozuv", null=True, blank=True, on_delete=models.SET_NULL, related_name="reverses"
     )
 
     class Meta:
         ordering = ["-created_at"]
+        verbose_name = "Moliyaviy operatsiya"
+        verbose_name_plural = "Moliyaviy operatsiyalar"
         indexes = [
             models.Index(fields=["member", "created_at"]),
             models.Index(fields=["transaction_type"]),
@@ -90,23 +92,25 @@ class PaymentMethod(models.TextChoices):
 
 
 class Payment(models.Model):
-    member = models.ForeignKey("members.Member", on_delete=models.PROTECT, related_name="payments")
-    amount = models.DecimalField(max_digits=14, decimal_places=2)
-    payment_method = models.CharField(max_length=10, choices=PaymentMethod.choices, default=PaymentMethod.CASH)
-    reference = models.CharField(max_length=100, blank=True)
-    note = models.CharField(max_length=255, blank=True)
-    balance_before = models.DecimalField(max_digits=14, decimal_places=2)
-    balance_after = models.DecimalField(max_digits=14, decimal_places=2)
+    member = models.ForeignKey("members.Member", verbose_name="A'zo", on_delete=models.PROTECT, related_name="payments")
+    amount = models.DecimalField("Summa", max_digits=14, decimal_places=2)
+    payment_method = models.CharField("To'lov usuli", max_length=10, choices=PaymentMethod.choices, default=PaymentMethod.CASH)
+    reference = models.CharField("Chek raqami", max_length=100, blank=True)
+    note = models.CharField("Izoh", max_length=255, blank=True)
+    balance_before = models.DecimalField("Oldingi qoldiq", max_digits=14, decimal_places=2)
+    balance_after = models.DecimalField("Keyingi qoldiq", max_digits=14, decimal_places=2)
     ledger_entry = models.OneToOneField(
-        LedgerTransaction, null=True, blank=True, on_delete=models.SET_NULL, related_name="payment"
+        LedgerTransaction, verbose_name="Buxgalteriya yozuvi", null=True, blank=True, on_delete=models.SET_NULL, related_name="payment"
     )
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+        settings.AUTH_USER_MODEL, verbose_name="Yaratgan", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField("Yaratilgan", auto_now_add=True)
 
     class Meta:
         ordering = ["-created_at"]
+        verbose_name = "To'lov"
+        verbose_name_plural = "To'lovlar"
         indexes = [
             models.Index(fields=["member", "created_at"]),
         ]
