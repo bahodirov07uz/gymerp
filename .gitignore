@@ -5,7 +5,6 @@ venv/
 
 .env
 staticfiles/
-media/
 *.egg-info/
 .DS_Store
 env

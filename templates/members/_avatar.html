@@ -1,0 +1,10 @@
+{# Qayta ishlatiladigan a'zo avatari: rasm bo'lsa — rasm, bo'lmasa — bosh harflar. #}
+{# Foydalanish: {% include "members/_avatar.html" with member=member size="w-10 h-10" %} #}
+{# Ro'yxatlarda lazy-load; profil katta rasmi uchun loading="eager" uzating. #}
+{% if member.photo %}
+  <img src="{{ member.photo.url }}"{% if loading != "eager" %} loading="lazy"{% endif %} class="{{ size }} rounded-full object-cover flex-shrink-0" alt="{{ member.full_name }}">
+{% else %}
+  <div class="{{ size }} rounded-full bg-emerald-600/20 text-emerald-400 flex items-center justify-center font-bold flex-shrink-0 text-xs">
+    {{ member.first_name|first|upper }}{{ member.last_name|first|upper }}
+  </div>
+{% endif %}

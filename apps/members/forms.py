@@ -10,7 +10,7 @@ class MemberForm(forms.ModelForm):
         model = Member
         fields = [
             "first_name", "last_name", "phone", "date_of_birth",
-            "gender", "address", "notes", "is_active",
+            "gender", "address", "notes", "photo", "is_active",
         ]
         widgets = {
             "date_of_birth": forms.DateInput(attrs={"type": "date", "class": INPUT_CLS}),
@@ -20,5 +20,27 @@ class MemberForm(forms.ModelForm):
             "phone": forms.TextInput(attrs={"class": INPUT_CLS, "placeholder": "+998..."}),
             "gender": forms.Select(attrs={"class": INPUT_CLS}),
             "address": forms.TextInput(attrs={"class": INPUT_CLS}),
+            "photo": forms.ClearableFileInput(attrs={
+                "class": INPUT_CLS,
+                "accept": "image/*",
+            }),
             "is_active": forms.CheckboxInput(attrs={"class": "h-4 w-4"}),
+        }
+
+
+class MemberPhotoForm(forms.ModelForm):
+    """Profildan rasmni alohida yangilash uchun kichik forma.
+
+    ModelForm validatsiyasi Member.clean() dagi 5MB chegarani
+    avtomatik tekshiradi.
+    """
+
+    class Meta:
+        model = Member
+        fields = ["photo"]
+        widgets = {
+            "photo": forms.ClearableFileInput(attrs={
+                "class": INPUT_CLS,
+                "accept": "image/*",
+            }),
         }

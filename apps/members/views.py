@@ -4,13 +4,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.views import View
 from django.views.generic import CreateView, DetailView, ListView
 
 from apps.audit.services import log_action
 from apps.billing.services import calculate_member_balance
 from apps.memberships.services import get_active_membership
 
-from .forms import MemberForm
+from .forms import MemberForm, MemberPhotoForm
 from .models import Member
 
 
@@ -62,9 +63,33 @@ class MemberCreateView(LoginRequiredMixin, CreateView):
         return reverse("members:profile", args=[self.object.pk])
 
 
+class UpdateMemberPhotoView(LoginRequiredMixin, View):
+    """Profildan a'zo rasmini alohida yangilash (faqat `photo` fayli).
+
+    Oddiy POST + redirect oqimi — mobil brauzerlarda ham ishonchli
+    ishlaydi. Muvaffaqiyat/xato haqida messages orqali xabar beriladi.
+    """
+
+    def post(self, request, pk):
+        member = get_object_or_404(Member, pk=pk)
+        if not request.FILES.get("photo"):
+            messages.error(request, "Iltimos, avval rasm faylini tanlang.")
+            return redirect("members:profile", pk=member.pk)
+        form = MemberPhotoForm(request.POST, request.FILES, instance=member)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profil rasmi yangilandi.")
+        else:
+            error = "; ".join(
+                f"{field}: {', '.join(errs)}"
+                for field, errs in form.errors.items()
+            ) or "Rasmni saqlab bo'lmadi."
+            messages.error(request, error)
+        return redirect("members:profile", pk=member.pk)
+
+
 from decimal import Decimal, InvalidOperation
 from django.utils import timezone
-from django.views import View
 
 from apps.accounts.permissions import ManagerRequiredMixin
 from apps.billing.models import TransactionType

@@ -61,6 +61,7 @@
   <!-- Top Navigation & Header -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
     <div class="flex items-center gap-3 min-w-0">
+      {% include "members/_avatar.html" with member=member size="w-20 h-20" loading="eager" %}
       <a href="{% url 'members:list' %}"
          class="p-2.5 bg-[#13161B] hover:bg-[#1A1E25] border border-[#252A33] rounded-xl text-[#8A919E] hover:text-[#F0F2F5] transition-colors flex-shrink-0">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
@@ -207,6 +208,38 @@
             <button type="submit"
                     class="w-full py-2.5 px-4 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-sky-600/20 min-h-[44px]">
               💳 To'lovni tasdiqlash
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- CARD: Update Photo -->
+      <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-4 flex flex-col justify-between space-y-3">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-7 h-7 rounded-lg bg-emerald-600/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
+              📷
+            </div>
+            <h3 class="text-xs font-bold text-[#F0F2F5] uppercase tracking-wide">Rasmni almashtirish</h3>
+          </div>
+          <p class="text-[11px] text-[#8A919E] mb-3">Profil rasmini yangilash (5MB gacha).</p>
+
+          <form method="post"
+                action="{% url 'members:update_photo' member.pk %}"
+                enctype="multipart/form-data"
+                class="space-y-3">
+            {% csrf_token %}
+            <div class="flex items-center gap-3">
+              {% include "members/_avatar.html" with member=member size="w-12 h-12" loading="eager" %}
+              <input type="file"
+                     name="photo"
+                     accept="image/*"
+                     required
+                     class="flex-1 min-w-0 text-xs text-[#8A919E] file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border file:border-[#252A33] file:bg-[#1A1E25] file:text-[#F0F2F5] file:text-xs hover:file:bg-[#252A33]">
+            </div>
+            <button type="submit"
+                    class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl transition-colors shadow-lg shadow-emerald-600/20 min-h-[44px]">
+              📷 Rasmni saqlash
             </button>
           </form>
         </div>

@@ -12,10 +12,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ---------------------------------------------------------------------------
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "insecure-dev-key-change-me")
 DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,1b44-213-230-78-111.ngrok-free.app").split(",")
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,https://megazal.baxodirov.uz/").split(",")
 
 CSRF_TRUSTED_ORIGINS = [
-    o for o in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "https://1b44-213-230-78-111.ngrok-free.app").split(",") if o
+    o for o in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "https://https://megazal.baxodirov.uz/").split(",") if o
 ]
 
 # ---------------------------------------------------------------------------

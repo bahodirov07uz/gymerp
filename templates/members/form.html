@@ -21,7 +21,7 @@
 
   <!-- Form Card -->
   <div class="bg-[#13161B] border border-[#252A33] rounded-2xl p-6 shadow-xl shadow-black/20">
-    <form method="post" class="space-y-4">
+    <form method="post" enctype="multipart/form-data" class="space-y-4">
       {% csrf_token %}
 
       {% if form.errors %}
@@ -91,6 +91,22 @@
           Qo'shimcha eslatmalar / salomatlik holati
         </label>
         {{ form.notes }}
+      </div>
+
+      <!-- Photo -->
+      <div>
+        <label class="block text-xs font-medium text-[#8A919E] uppercase tracking-wide mb-1.5">
+          Profil rasmi (ixtiyoriy, 5MB gacha)
+        </label>
+        <div class="flex items-center gap-3">
+          {% if form.instance.photo %}
+            <img src="{{ form.instance.photo.url }}" alt="{{ form.instance.full_name }}"
+                 class="w-12 h-12 rounded-full object-cover flex-shrink-0 border border-[#252A33]">
+          {% endif %}
+          <div class="flex-1 min-w-0">
+            {{ form.photo }}
+          </div>
+        </div>
       </div>
 
       <!-- Active Checkbox -->

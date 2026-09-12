@@ -82,7 +82,8 @@
     <div class="lg:col-span-7">
       <div id="member-card-modal"
            x-data="{ open: false }"
-           x-on:htmx:after-swap.window="if ($event.detail.target && $event.detail.target.id === 'member-card' && $event.detail.target.innerHTML.trim() !== '') { open = true; }"
+           x-on:htmx:after-swap.window="if ($event.detail.target && $el.querySelector('#member-card')?.contains($event.detail.target) && $el.querySelector('#member-card').innerHTML.trim() !== '') { open = true; }"
+           x-effect="document.body.classList.toggle('member-modal-open', open)"
            x-on:close-member-modal.window="open = false"
            @keydown.escape.window="open = false">
 
@@ -184,9 +185,7 @@
                 hx-target="#member-card"
                 hx-swap="innerHTML transition:true">
               <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-emerald-600/20 border border-emerald-600/30 flex items-center justify-center flex-shrink-0 text-emerald-400 font-bold text-xs">
-                  {{ att.member.first_name|first|upper }}
-                </div>
+                {% include "members/_avatar.html" with member=att.member size="w-8 h-8" %}
                 <div class="min-w-0">
                   <div class="flex items-center gap-2 flex-wrap">
                     <span class="font-semibold text-[#F0F2F5] group-hover:text-emerald-400 transition-colors truncate">

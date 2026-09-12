@@ -16,6 +16,7 @@
            hx-swap="innerHTML transition:true">
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2 flex-wrap">
+            {% include "members/_avatar.html" with member=att.member size="w-8 h-8" %}
             <span class="text-xs font-semibold text-[#F0F2F5] group-hover:text-amber-400 transition-colors truncate">
               {{ att.member.full_name }}
             </span>
@@ -51,6 +52,7 @@
            hx-swap="innerHTML transition:true">
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2 flex-wrap">
+            {% include "members/_avatar.html" with member=att.member size="w-8 h-8" %}
             <span class="text-xs font-semibold text-[#F0F2F5] group-hover:text-emerald-400 transition-colors truncate">
               {{ att.member.full_name }}
             </span>
